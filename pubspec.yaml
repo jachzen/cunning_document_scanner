@@ -1,7 +1,7 @@
 name: cunning_document_scanner
 description: A new flutter plugin project.
 version: 1.0.0
-homepage:
+homepage: https://cunning.biz
 
 environment:
   sdk: ">=2.15.1 <3.0.0"
