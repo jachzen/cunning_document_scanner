@@ -1,0 +1,15 @@
+#import "CunningDocumentScannerPlugin.h"
+#if __has_include(<cunning_document_scanner/cunning_document_scanner-Swift.h>)
+#import <cunning_document_scanner/cunning_document_scanner-Swift.h>
+#else
+// Support project import fallback if the generated compatibility header
+// is not copied when this plugin is created as a library.
+// https://forums.swift.org/t/swift-static-libraries-dont-copy-generated-objective-c-header/19816
+#import "cunning_document_scanner-Swift.h"
+#endif
+
+@implementation CunningDocumentScannerPlugin
++ (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
+  [SwiftCunningDocumentScannerPlugin registerWithRegistrar:registrar];
+}
+@end
