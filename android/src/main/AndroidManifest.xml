@@ -6,7 +6,7 @@
     <uses-feature android:name="android.hardware.camera"
                   android:required="true" />
     <application android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name="DocumentCropActivity" android:exported="true"
+        <activity android:name="DocumentCropActivity" android:exported="false"
         ></activity>
         <provider
                 android:name="androidx.core.content.FileProvider"

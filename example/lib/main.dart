@@ -36,7 +36,8 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: SingleChildScrollView(child: Column(
+        body: SingleChildScrollView(
+            child: Column(
           children: [
             ElevatedButton(
                 onPressed: onPressed, child: const Text("Add Pictures")),
@@ -50,13 +51,13 @@ class _MyAppState extends State<MyApp> {
   void onPressed() async {
     List<String> pictures;
     try {
-      pictures = await CunningDocumentScanner.getPictures()?? [];
+      pictures = await CunningDocumentScanner.getPictures() ?? [];
       if (!mounted) return;
       setState(() {
         print("got pictures" + pictures.join(","));
         _pictures = pictures;
       });
-    } catch(exception) {
+    } catch (exception) {
       print("Exception: " + exception.toString());
     }
   }
