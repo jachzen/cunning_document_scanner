@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 
 void main() {
@@ -54,11 +53,10 @@ class _MyAppState extends State<MyApp> {
       pictures = await CunningDocumentScanner.getPictures() ?? [];
       if (!mounted) return;
       setState(() {
-        print("got pictures" + pictures.join(","));
         _pictures = pictures;
       });
     } catch (exception) {
-      print("Exception: " + exception.toString());
+      // Handle exception here
     }
   }
 }

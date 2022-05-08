@@ -7,9 +7,7 @@ class CunningDocumentScanner {
   static const MethodChannel _channel =
       MethodChannel('cunning_document_scanner');
 
-  /**
-   * Call this to start get Picture workflow.
-   */
+  /// Call this to start get Picture workflow.
   static Future<List<String>?> getPictures() async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.camera,
