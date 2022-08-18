@@ -107,14 +107,14 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                 if (requestCode == START_CAMERA_ACTIVITY) {
                     startDocumentCropper()
                 } else if (requestCode == START_DOCUMENT_ACTIVITY) {
-                    if (data.getStringExtra(CROPPED_IMAGE) == null) {
+                    if (data?.getStringExtra(CROPPED_IMAGE) == null) {
                         startCamera()
-                    } else if (data.getBooleanExtra(TAKE_MORE, false)) {
-                        val imagePath = data.getStringExtra(CROPPED_IMAGE)
+                    } else if (data != null && data!!.getBooleanExtra(TAKE_MORE, false)) {
+                        val imagePath = data?.getStringExtra(CROPPED_IMAGE)
                         pictures.add(imagePath!!)
                         startCamera()
                     } else {
-                        val imagePath = data.getStringExtra(CROPPED_IMAGE)
+                        val imagePath = data?.getStringExtra(CROPPED_IMAGE)
                         pictures.add(imagePath!!)
                         this.pendingResult?.success(pictures)
                     }

@@ -1,3 +1,7 @@
+## 1.0.3
+* Updated permission handler constraint to ^10
+* Android fixed nullsafe access issues
+
 ## 1.0.2
 * Cleanup code - added images to README.md
 
