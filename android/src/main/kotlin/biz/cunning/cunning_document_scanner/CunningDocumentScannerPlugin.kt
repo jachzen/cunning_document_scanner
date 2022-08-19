@@ -17,6 +17,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import io.flutter.plugin.common.PluginRegistry
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -24,11 +25,13 @@ import java.util.*
 
 /** CunningDocumentScannerPlugin */
 class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+    private var binding: ActivityPluginBinding? = null
+    private var delegate: PluginRegistry.ActivityResultListener? = null
     private var file: File? = null
     private var pendingResult: Result? = null
     private lateinit var activity: Activity
-    private val START_CAMERA_ACTIVITY = 1
-    private val START_DOCUMENT_ACTIVITY = 2
+    private val START_CAMERA_ACTIVITY = 1928274001
+    private val START_DOCUMENT_ACTIVITY = 1928274002
 
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
@@ -102,30 +105,37 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     var pictures = mutableListOf<String>()
 
     private fun addActivityResultListener(binding: ActivityPluginBinding) {
-        binding.addActivityResultListener { requestCode, resultCode, data ->
-            if (resultCode == RESULT_OK)
-                if (requestCode == START_CAMERA_ACTIVITY) {
-                    startDocumentCropper()
-                } else if (requestCode == START_DOCUMENT_ACTIVITY) {
-                    if (data?.getStringExtra(CROPPED_IMAGE) == null) {
-                        startCamera()
-                    } else if (data != null && data!!.getBooleanExtra(TAKE_MORE, false)) {
-                        val imagePath = data?.getStringExtra(CROPPED_IMAGE)
-                        pictures.add(imagePath!!)
-                        startCamera()
+        this.binding = binding;
+        if (this.delegate == null) {
+            this.delegate = PluginRegistry.ActivityResultListener { requestCode, resultCode, data ->
+                if (resultCode == RESULT_OK)
+                    if (requestCode == START_CAMERA_ACTIVITY) {
+                        startDocumentCropper()
+                    } else if (requestCode == START_DOCUMENT_ACTIVITY) {
+                        if (data?.getStringExtra(CROPPED_IMAGE) == null) {
+                            startCamera()
+                        } else if (data.getBooleanExtra(TAKE_MORE, false)) {
+                            val imagePath = data.getStringExtra(CROPPED_IMAGE)
+                            pictures.add(imagePath!!)
+                            startCamera()
+                        } else {
+                            val imagePath = data.getStringExtra(CROPPED_IMAGE)
+                            pictures.add(imagePath!!)
+                            this.pendingResult?.success(pictures)
+                        }
                     } else {
-                        val imagePath = data?.getStringExtra(CROPPED_IMAGE)
-                        pictures.add(imagePath!!)
-                        this.pendingResult?.success(pictures)
+                        return@ActivityResultListener false
                     }
-                } else {
-                    pendingResult?.error("INTENT_ERROR", "Intent request code unknown", null)
+                else {
+                    return@ActivityResultListener false
                 }
-            else {
-                pendingResult?.error("INTENT_ERROR", "Intent not successfull", null)
+                true
             }
-            true
+        } else {
+            binding.removeActivityResultListener(this.delegate!!)
         }
+
+        binding.addActivityResultListener(delegate!!)
     }
 
     private fun startDocumentCropper() {
@@ -154,6 +164,10 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     }
 
     override fun onDetachedFromActivity() {
+        removeActivityResultListener()
+    }
 
+    private fun removeActivityResultListener() {
+        this.delegate?.let { this.binding?.removeActivityResultListener(it) }
     }
 }

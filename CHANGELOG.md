@@ -1,3 +1,6 @@
+## 1.0.4
+* Fixed conflicting requestcodes issue
+
 ## 1.0.3
 * Updated permission handler constraint to ^10
 * Android fixed nullsafe access issues
