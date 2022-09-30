@@ -6,14 +6,5 @@
     <uses-feature android:name="android.hardware.camera"
                   android:required="true" />
     <application android:theme="@style/Theme.AppCompat.NoActionBar">
-        <provider
-            android:name="com.websitebeaver.documentscanner.DocumentScannerFileProvider"
-            android:authorities="com.websitebeaver.documentscanner.FileProvider"
-            android:exported="false"
-                android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
     </application>
 </manifest>
