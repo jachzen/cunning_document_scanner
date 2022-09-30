@@ -63,63 +63,69 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         this.binding = binding
         if (this.delegate == null) {
             this.delegate = PluginRegistry.ActivityResultListener { requestCode, resultCode, data ->
-                    // make sure responseType is valid
-                    if (!arrayOf(
-                            ResponseType.BASE64,
-                            ResponseType.IMAGE_FILE_PATH
-                        ).contains(responseType)) {
-                        throw Exception("responseType must be either ${ResponseType.BASE64} " +
-                                "or ${ResponseType.IMAGE_FILE_PATH}")
+                if (requestCode != START_DOCUMENT_ACTIVITY) {
+                    return@ActivityResultListener false
+                }
+                // make sure responseType is valid
+                if (!arrayOf(
+                        ResponseType.BASE64,
+                        ResponseType.IMAGE_FILE_PATH
+                    ).contains(responseType)
+                ) {
+                    throw Exception(
+                        "responseType must be either ${ResponseType.BASE64} " +
+                                "or ${ResponseType.IMAGE_FILE_PATH}"
+                    )
+                }
+                when (resultCode) {
+                    Activity.RESULT_OK -> {
+                        // check for errors
+                        val error = data?.extras?.get("error") as String?
+                        if (error != null) {
+                            throw Exception("error - $error")
+                        }
+
+                        // get an array with scanned document file paths
+                        val croppedImageResults: ArrayList<String> =
+                            data?.getStringArrayListExtra(
+                                "croppedImageResults"
+                            ) ?: throw Exception("No cropped images returned")
+
+                        // if responseType is imageFilePath return an array of file paths
+                        var successResponse: ArrayList<String> = croppedImageResults
+
+                        // if responseType is base64 return an array of base64 images
+                        if (responseType == ResponseType.BASE64) {
+                            val base64CroppedImages =
+                                croppedImageResults.map { croppedImagePath ->
+                                    // read cropped image from file path, and convert to base 64
+                                    val base64Image = ImageUtil().readImageAndConvertToBase64(
+                                        croppedImagePath
+                                    )
+
+                                    // delete cropped image from android device to avoid
+                                    // accumulating photos
+                                    File(croppedImagePath).delete()
+
+                                    base64Image
+                                }
+
+                            successResponse = base64CroppedImages as ArrayList<String>
+                        }
+
+                        // trigger the success event handler with an array of cropped images
+                        this.pendingResult?.success(successResponse)
+                        return@ActivityResultListener true
                     }
-                    when (resultCode) {
-                        Activity.RESULT_OK -> {
-                            // check for errors
-                            val error = data?.extras?.get("error") as String?
-                            if (error != null) {
-                                throw Exception("error - $error")
-                            }
-
-                            // get an array with scanned document file paths
-                            val croppedImageResults: ArrayList<String> =
-                                data?.getStringArrayListExtra(
-                                    "croppedImageResults"
-                                ) ?: throw Exception("No cropped images returned")
-
-                            // if responseType is imageFilePath return an array of file paths
-                            var successResponse: ArrayList<String> = croppedImageResults
-
-                            // if responseType is base64 return an array of base64 images
-                            if (responseType == ResponseType.BASE64) {
-                                val base64CroppedImages =
-                                    croppedImageResults.map { croppedImagePath ->
-                                        // read cropped image from file path, and convert to base 64
-                                        val base64Image = ImageUtil().readImageAndConvertToBase64(
-                                            croppedImagePath
-                                        )
-
-                                        // delete cropped image from android device to avoid
-                                        // accumulating photos
-                                        File(croppedImagePath).delete()
-
-                                        base64Image
-                                    }
-
-                                successResponse = base64CroppedImages as ArrayList<String>
-                            }
-
-                            // trigger the success event handler with an array of cropped images
-                            this.pendingResult?.success(successResponse)
-                            return@ActivityResultListener true
-                        }
-                        Activity.RESULT_CANCELED -> {
-                            // user closed camera
-                            this.pendingResult?.success(emptyList<String>())
-                            return@ActivityResultListener true
-                        }
-                        else -> {
-                            return@ActivityResultListener false
-                        }
+                    Activity.RESULT_CANCELED -> {
+                        // user closed camera
+                        this.pendingResult?.success(emptyList<String>())
+                        return@ActivityResultListener true
                     }
+                    else -> {
+                        return@ActivityResultListener false
+                    }
+                }
             }
         } else {
             binding.removeActivityResultListener(this.delegate!!)
