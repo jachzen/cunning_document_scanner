@@ -1,15 +1,14 @@
 package biz.cunning.cunning_document_scanner
 
 import android.app.Activity
-import android.app.Activity.RESULT_OK
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.provider.MediaStore
-import androidx.annotation.NonNull
 import androidx.core.app.ActivityCompat
-import androidx.core.content.FileProvider
-import biz.cunning.cunning_document_scanner.DocumentCropActivity.DocumentCropConst.CROPPED_IMAGE
-import biz.cunning.cunning_document_scanner.DocumentCropActivity.DocumentCropConst.TAKE_MORE
+import com.websitebeaver.documentscanner.DocumentScannerActivity
+import com.websitebeaver.documentscanner.constants.DefaultSetting
+import com.websitebeaver.documentscanner.constants.DocumentScannerExtra
+import com.websitebeaver.documentscanner.constants.ResponseType
+import com.websitebeaver.documentscanner.utils.ImageUtil
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -19,19 +18,15 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
 import java.io.File
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
 
 /** CunningDocumentScannerPlugin */
 class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
-    private var binding: ActivityPluginBinding? = null
     private var delegate: PluginRegistry.ActivityResultListener? = null
-    private var file: File? = null
+    private var binding: ActivityPluginBinding? = null
     private var pendingResult: Result? = null
     private lateinit var activity: Activity
-    private val START_CAMERA_ACTIVITY = 1928274001
-    private val START_DOCUMENT_ACTIVITY = 1928274002
+    private var responseType: String? = DefaultSetting.RESPONSE_TYPE
+    private val START_DOCUMENT_ACTIVITY: Int = 0x362738
 
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
@@ -39,97 +34,92 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     /// when the Flutter Engine is detached from the Activity
     private lateinit var channel: MethodChannel
 
-    override fun onAttachedToEngine(@NonNull flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, "cunning_document_scanner")
         channel.setMethodCallHandler(this)
     }
 
-    override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: Result) {
+    override fun onMethodCall(call: MethodCall, result: Result) {
         if (call.method == "getPictures") {
-            this.pictures.clear()
             this.pendingResult = result
-            startCamera()
+            startScan()
         } else {
             result.notImplemented()
         }
     }
 
-    private fun startCamera() {
-        file = createImageFile()
-        file?.also {
-            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            val photoURI = FileProvider.getUriForFile(
-                activity,
-                activity.getPackageName() + ".flutter.cunning_document_scanner",
-                it
-            )
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-            try {
-                ActivityCompat.startActivityForResult(
-                    this.activity,
-                    takePictureIntent,
-                    START_CAMERA_ACTIVITY,
-                    null
-                )
-            } catch (e: ActivityNotFoundException) {
-                // display error state to the user
-            }
-        }
-    }
 
-    lateinit var currentPhotoPath: String
-
-    @Throws(IOException::class)
-    private fun createImageFile(): File {
-        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        val storageDir: File? = this.activity.cacheDir
-        return File.createTempFile(
-            "JPEG_${timeStamp}_",
-            ".jpg",
-            storageDir
-        ).apply {
-            currentPhotoPath = absolutePath
-        }
-    }
-
-    override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {
+    override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
         channel.setMethodCallHandler(null)
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        this.activity = binding.activity;
+        this.activity = binding.activity
 
         addActivityResultListener(binding)
     }
 
-    var pictures = mutableListOf<String>()
-
     private fun addActivityResultListener(binding: ActivityPluginBinding) {
-        this.binding = binding;
+        this.binding = binding
         if (this.delegate == null) {
             this.delegate = PluginRegistry.ActivityResultListener { requestCode, resultCode, data ->
-                if (resultCode == RESULT_OK)
-                    if (requestCode == START_CAMERA_ACTIVITY) {
-                        startDocumentCropper()
-                    } else if (requestCode == START_DOCUMENT_ACTIVITY) {
-                        if (data?.getStringExtra(CROPPED_IMAGE) == null) {
-                            startCamera()
-                        } else if (data.getBooleanExtra(TAKE_MORE, false)) {
-                            val imagePath = data.getStringExtra(CROPPED_IMAGE)
-                            pictures.add(imagePath!!)
-                            startCamera()
-                        } else {
-                            val imagePath = data.getStringExtra(CROPPED_IMAGE)
-                            pictures.add(imagePath!!)
-                            this.pendingResult?.success(pictures)
-                        }
-                    } else {
-                        return@ActivityResultListener false
+                    // make sure responseType is valid
+                    if (!arrayOf(
+                            ResponseType.BASE64,
+                            ResponseType.IMAGE_FILE_PATH
+                        ).contains(responseType)) {
+                        throw Exception("responseType must be either ${ResponseType.BASE64} " +
+                                "or ${ResponseType.IMAGE_FILE_PATH}")
                     }
-                else {
-                    return@ActivityResultListener false
-                }
-                true
+                    when (resultCode) {
+                        Activity.RESULT_OK -> {
+                            // check for errors
+                            val error = data?.extras?.get("error") as String?
+                            if (error != null) {
+                                throw Exception("error - $error")
+                            }
+
+                            // get an array with scanned document file paths
+                            val croppedImageResults: ArrayList<String> =
+                                data?.getStringArrayListExtra(
+                                    "croppedImageResults"
+                                ) ?: throw Exception("No cropped images returned")
+
+                            // if responseType is imageFilePath return an array of file paths
+                            var successResponse: ArrayList<String> = croppedImageResults
+
+                            // if responseType is base64 return an array of base64 images
+                            if (responseType == ResponseType.BASE64) {
+                                val base64CroppedImages =
+                                    croppedImageResults.map { croppedImagePath ->
+                                        // read cropped image from file path, and convert to base 64
+                                        val base64Image = ImageUtil().readImageAndConvertToBase64(
+                                            croppedImagePath
+                                        )
+
+                                        // delete cropped image from android device to avoid
+                                        // accumulating photos
+                                        File(croppedImagePath).delete()
+
+                                        base64Image
+                                    }
+
+                                successResponse = base64CroppedImages as ArrayList<String>
+                            }
+
+                            // trigger the success event handler with an array of cropped images
+                            this.pendingResult?.success(successResponse)
+                            return@ActivityResultListener true
+                        }
+                        Activity.RESULT_CANCELED -> {
+                            // user closed camera
+                            this.pendingResult?.success(emptyList<String>())
+                            return@ActivityResultListener true
+                        }
+                        else -> {
+                            return@ActivityResultListener false
+                        }
+                    }
             }
         } else {
             binding.removeActivityResultListener(this.delegate!!)
@@ -138,21 +128,40 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         binding.addActivityResultListener(delegate!!)
     }
 
-    private fun startDocumentCropper() {
-        val cropImageIntent = Intent(this.activity, DocumentCropActivity::class.java).apply {
-            putExtra("CROP_IMAGE", file?.path)
-        }
+
+    /**
+     * create intent to launch document scanner and set custom options
+     */
+    fun createDocumentScanIntent(): Intent {
+        val documentScanIntent = Intent(activity, DocumentScannerActivity::class.java)
+        documentScanIntent.putExtra(
+            DocumentScannerExtra.EXTRA_LET_USER_ADJUST_CROP,
+            true
+        )
+        documentScanIntent.putExtra(
+            DocumentScannerExtra.EXTRA_MAX_NUM_DOCUMENTS,
+            100
+        )
+
+        return documentScanIntent
+    }
+
+
+    /**
+     * add document scanner result handler and launch the document scanner
+     */
+    fun startScan() {
+        val intent = createDocumentScanIntent()
         try {
             ActivityCompat.startActivityForResult(
                 this.activity,
-                cropImageIntent,
+                intent,
                 START_DOCUMENT_ACTIVITY,
                 null
             )
         } catch (e: ActivityNotFoundException) {
             pendingResult?.error("ERROR", "FAILED TO START ACTIVITY", null)
         }
-
     }
 
     override fun onDetachedFromActivityForConfigChanges() {

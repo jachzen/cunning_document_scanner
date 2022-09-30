@@ -1,21 +1,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
   package="biz.cunning.cunning_document_scanner">
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
-    <uses-permission android:name="android.permission.CAMERA"></uses-permission>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera"
                   android:required="true" />
     <application android:theme="@style/Theme.AppCompat.NoActionBar">
-        <activity android:name="DocumentCropActivity" android:exported="false"
-        ></activity>
         <provider
-                android:name="androidx.core.content.FileProvider"
-                android:authorities="${applicationId}.flutter.cunning_document_scanner"
-                android:exported="false"
+            android:name="com.websitebeaver.documentscanner.DocumentScannerFileProvider"
+            android:authorities="com.websitebeaver.documentscanner.FileProvider"
+            android:exported="false"
                 android:grantUriPermissions="true">
             <meta-data
-                    android:name="android.support.FILE_PROVIDER_PATHS"
-                    android:resource="@xml/file_paths"></meta-data>
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
         </provider>
     </application>
 </manifest>
