@@ -1,10 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="biz.cunning.cunning_document_scanner">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="biz.cunning.cunning_document_scanner">
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera"
                   android:required="true" />
     <application android:theme="@style/Theme.AppCompat.NoActionBar">
+        <activity android:name="com.websitebeaver.documentscanner.DocumentScannerActivity"
+            android:screenOrientation="portrait"
+            tools:node="merge">
+        </activity>
     </application>
 </manifest>
