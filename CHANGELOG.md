@@ -1,3 +1,6 @@
+## 1.1.1
+* Updated android documentscanner library
+
 ## 1.1.0
 * Exchanged android documentscanner with https://github.com/WebsiteBeaver/android-document-scanner
 
