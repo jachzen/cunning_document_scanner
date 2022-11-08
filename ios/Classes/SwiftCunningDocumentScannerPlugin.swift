@@ -36,10 +36,14 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
 
     public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
         let tempDirPath = self.getDocumentsDirectory()
+        let currentDateTime = Date()
+        let df = DateFormatter()
+        df.dateFormat = "yyyyMMdd-HHmmss"
+        let formattedDate = df.string(from: currentDateTime)
         var filenames: [String] = []
         for i in 0 ... scan.pageCount - 1 {
             let page = scan.imageOfPage(at: i)
-            let url = tempDirPath.appendingPathComponent("tmp-document-\(i).png")
+            let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).png")
             try? page.pngData()?.write(to: url)
             filenames.append(url.path)
         }

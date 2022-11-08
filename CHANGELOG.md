@@ -1,3 +1,6 @@
+## 1.1.2
+* iOS return unique filenames
+
 ## 1.1.1
 * Updated android documentscanner library
 
