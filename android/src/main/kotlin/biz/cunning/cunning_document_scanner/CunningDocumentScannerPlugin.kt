@@ -64,7 +64,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                 when (resultCode) {
                     Activity.RESULT_OK -> {
                         // check for errors
-                        val error = data?.extras?.get("error") as String?
+                        val error = data?.extras?.getString("error")
                         if (error != null) {
                             throw Exception("error - $error")
                         }
@@ -74,7 +74,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                             data?.getStringArrayListExtra("croppedImageResults")?.toList()
                                 ?: throw Exception("No cropped images returned")
 
-                        // return an array of file paths
+                        // return a list of file paths
                         // removing file uri prefix as Flutter file will have problems with it
                         val successResponse = croppedImageResults.map {
                             it.removePrefix("file://")
@@ -105,7 +105,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     /**
      * create intent to launch document scanner and set custom options
      */
-    fun createDocumentScanIntent(): Intent {
+    private fun createDocumentScanIntent(): Intent {
         val documentScanIntent = Intent(activity, DocumentScannerActivity::class.java)
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_LET_USER_ADJUST_CROP,
@@ -123,7 +123,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     /**
      * add document scanner result handler and launch the document scanner
      */
-    fun startScan() {
+    private fun startScan() {
         val intent = createDocumentScanIntent()
         try {
             ActivityCompat.startActivityForResult(
