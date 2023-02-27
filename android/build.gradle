@@ -2,14 +2,14 @@ group 'biz.cunning.cunning_document_scanner'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '1.8.0'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.3'
+        classpath 'com.android.tools.build:gradle:7.4.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -47,6 +47,6 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.websitebeaver:documentscanner:1.0.5'
-    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.websitebeaver:documentscanner:1.3.4'
+//    implementation 'androidx.appcompat:appcompat:1.6.1'
 }

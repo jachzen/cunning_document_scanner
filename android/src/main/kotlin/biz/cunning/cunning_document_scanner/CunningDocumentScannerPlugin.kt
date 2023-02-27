@@ -5,10 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import androidx.core.app.ActivityCompat
 import com.websitebeaver.documentscanner.DocumentScannerActivity
-import com.websitebeaver.documentscanner.constants.DefaultSetting
 import com.websitebeaver.documentscanner.constants.DocumentScannerExtra
-import com.websitebeaver.documentscanner.constants.ResponseType
-import com.websitebeaver.documentscanner.utils.ImageUtil
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -17,7 +14,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
-import java.io.File
 
 /** CunningDocumentScannerPlugin */
 class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -25,7 +21,6 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     private var binding: ActivityPluginBinding? = null
     private var pendingResult: Result? = null
     private lateinit var activity: Activity
-    private var responseType: String? = DefaultSetting.RESPONSE_TYPE
     private val START_DOCUMENT_ACTIVITY: Int = 0x362738
 
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -66,17 +61,6 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                 if (requestCode != START_DOCUMENT_ACTIVITY) {
                     return@ActivityResultListener false
                 }
-                // make sure responseType is valid
-                if (!arrayOf(
-                        ResponseType.BASE64,
-                        ResponseType.IMAGE_FILE_PATH
-                    ).contains(responseType)
-                ) {
-                    throw Exception(
-                        "responseType must be either ${ResponseType.BASE64} " +
-                                "or ${ResponseType.IMAGE_FILE_PATH}"
-                    )
-                }
                 when (resultCode) {
                     Activity.RESULT_OK -> {
                         // check for errors
@@ -86,32 +70,15 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                         }
 
                         // get an array with scanned document file paths
-                        val croppedImageResults: ArrayList<String> =
-                            data?.getStringArrayListExtra(
-                                "croppedImageResults"
-                            ) ?: throw Exception("No cropped images returned")
+                        val croppedImageResults =
+                            data?.getStringArrayListExtra("croppedImageResults")?.toList()
+                                ?: throw Exception("No cropped images returned")
 
-                        // if responseType is imageFilePath return an array of file paths
-                        var successResponse: ArrayList<String> = croppedImageResults
-
-                        // if responseType is base64 return an array of base64 images
-                        if (responseType == ResponseType.BASE64) {
-                            val base64CroppedImages =
-                                croppedImageResults.map { croppedImagePath ->
-                                    // read cropped image from file path, and convert to base 64
-                                    val base64Image = ImageUtil().readImageAndConvertToBase64(
-                                        croppedImagePath
-                                    )
-
-                                    // delete cropped image from android device to avoid
-                                    // accumulating photos
-                                    File(croppedImagePath).delete()
-
-                                    base64Image
-                                }
-
-                            successResponse = base64CroppedImages as ArrayList<String>
-                        }
+                        // return an array of file paths
+                        // removing file uri prefix as Flutter file will have problems with it
+                        val successResponse = croppedImageResults.map {
+                            it.removePrefix("file://")
+                        }.toList()
 
                         // trigger the success event handler with an array of cropped images
                         this.pendingResult?.success(successResponse)
