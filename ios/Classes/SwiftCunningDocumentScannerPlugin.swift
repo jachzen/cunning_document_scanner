@@ -4,9 +4,9 @@ import Vision
 import VisionKit
 
 @available(iOS 13.0, *)
-public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate {
+public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, MyDocumentCameraViewControllerDelegate {
    var resultChannel :FlutterResult?
-   var presentingController: VNDocumentCameraViewController?
+   var presentingController: MyDocumentCameraViewController?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "cunning_document_scanner", binaryMessenger: registrar.messenger())
@@ -18,7 +18,7 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
     if call.method == "getPictures" {
             let presentedVC: UIViewController? = UIApplication.shared.keyWindow?.rootViewController
             self.resultChannel = result
-            self.presentingController = VNDocumentCameraViewController()
+            self.presentingController = MyDocumentCameraViewController()
             self.presentingController!.delegate = self
             presentedVC?.present(self.presentingController!, animated: true)
         } else {
@@ -34,7 +34,7 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
         return documentsDirectory
     }
 
-    public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
+    public func documentCameraViewController(_ controller: MyDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
         let tempDirPath = self.getDocumentsDirectory()
         let currentDateTime = Date()
         let df = DateFormatter()
@@ -51,13 +51,21 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
         presentingController?.dismiss(animated: true)
     }
 
-    public func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
+    public func documentCameraViewControllerDidCancel(_ controller: MyDocumentCameraViewController) {
         resultChannel?(nil)
         presentingController?.dismiss(animated: true)
     }
 
-    public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
+    public func documentCameraViewController(_ controller: MyDocumentCameraViewController, didFailWithError error: Error) {
         resultChannel?(nil)
         presentingController?.dismiss(animated: true)
     }
+}
+
+
+class MyDocumentCameraViewController: VNDocumentCameraViewController {
+    override func viewDidLoad() {
+    super.viewDidLoad()
+    navigationItem.title = "Place the photo in view"
+}
 }
