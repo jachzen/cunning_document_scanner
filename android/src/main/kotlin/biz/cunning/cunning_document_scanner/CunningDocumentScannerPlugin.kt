@@ -113,7 +113,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         )
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_MAX_NUM_DOCUMENTS,
-            100
+            1
         )
 
         return documentScanIntent
