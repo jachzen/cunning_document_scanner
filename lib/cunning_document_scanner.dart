@@ -12,7 +12,7 @@ class CunningDocumentScanner {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.camera,
     ].request();
-    if (statuses.containsValue(PermissionStatus.denied)) {
+    if (statuses.containsValue(PermissionStatus.denied) || statuses.containsValue(PermissionStatus.permanentlyDenied)) {
       throw Exception("Permission not granted");
     }
 
