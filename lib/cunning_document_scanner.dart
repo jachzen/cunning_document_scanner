@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -16,7 +17,7 @@ class CunningDocumentScanner {
       throw Exception("Permission not granted");
     }
 
-    final List<dynamic>? pictures = await _channel.invokeMethod('getPictures',{"crop":crop});
+    final List<dynamic>? pictures = await _channel.invokeMethod('getPictures',{'crop':crop ?? true});
     return pictures?.map((e) => e as String).toList();
   }
 }

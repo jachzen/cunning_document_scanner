@@ -36,9 +36,13 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         if (call.method == "getPictures") {
-            Boolean crop = call.argument("crop");
-            this.pendingResult = result
-            startScan(crop)
+          val crop = call.argument<Boolean>("crop");
+            if (crop != null) {
+                this.pendingResult = result
+                startScan(crop)
+            } else {
+                result.error("INVALID_ARGUMENT", "The value 'crop' is not a boolean", null)
+            }
         } else {
             result.notImplemented()
         }
@@ -114,7 +118,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         )
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_MAX_NUM_DOCUMENTS,
-            crop?100:1
+        if(crop) 100 else 1
         )
 
         return documentScanIntent
