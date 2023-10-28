@@ -26,7 +26,7 @@ minSdkVersion should be at least 21
 ## How to use ?
 
 ```
-    final imagesPath = await CunningDocumentScanner.getPicture()
+    final imagesPath = await CunningDocumentScanner.getPicture(true)
 ```
 
 The path's to the cropped Images will be returned.
