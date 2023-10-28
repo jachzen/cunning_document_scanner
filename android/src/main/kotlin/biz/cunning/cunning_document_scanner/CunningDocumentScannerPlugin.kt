@@ -36,7 +36,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         if (call.method == "getPictures") {
-             crop = call.argument("crop");
+            Boolean crop = call.argument("crop");
             this.pendingResult = result
             startScan(crop)
         } else {
