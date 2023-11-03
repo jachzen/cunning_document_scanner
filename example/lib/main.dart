@@ -1,8 +1,6 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'dart:async';
-
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 
 void main() {
@@ -50,7 +48,7 @@ class _MyAppState extends State<MyApp> {
   void onPressed() async {
     List<String> pictures;
     try {
-      pictures = await CunningDocumentScanner.getPictures() ?? [];
+      pictures = await CunningDocumentScanner.getPictures(true) ?? [];
       if (!mounted) return;
       setState(() {
         _pictures = pictures;
