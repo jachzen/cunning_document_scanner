@@ -1,3 +1,7 @@
+## 1.1.3
+* Fixed permanently denied permission issue
+* Merged crop option for android - Thanks Edwin
+
 ## 1.1.2
 * iOS return unique filenames
 
