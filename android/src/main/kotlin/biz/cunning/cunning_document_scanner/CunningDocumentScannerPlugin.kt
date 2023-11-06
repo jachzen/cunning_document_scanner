@@ -21,7 +21,6 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     private var binding: ActivityPluginBinding? = null
     private var pendingResult: Result? = null
     private lateinit var activity: Activity
-    private val START_DOCUMENT_ACTIVITY: Int = 0x362738
 
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
@@ -156,5 +155,9 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     private fun removeActivityResultListener() {
         this.delegate?.let { this.binding?.removeActivityResultListener(it) }
+    }
+
+    companion object {
+        private const val START_DOCUMENT_ACTIVITY: Int = 0x362738
     }
 }
