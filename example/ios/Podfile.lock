@@ -4,14 +4,14 @@ PODS:
   - Flutter (1.0.0)
   - path_provider_ios (0.0.1):
     - Flutter
-  - "permission_handler (5.1.0+2)":
+  - permission_handler_apple (9.1.1):
     - Flutter
 
 DEPENDENCIES:
   - cunning_document_scanner (from `.symlinks/plugins/cunning_document_scanner/ios`)
   - Flutter (from `Flutter`)
   - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
-  - permission_handler (from `.symlinks/plugins/permission_handler/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
 
 EXTERNAL SOURCES:
   cunning_document_scanner:
@@ -20,15 +20,15 @@ EXTERNAL SOURCES:
     :path: Flutter
   path_provider_ios:
     :path: ".symlinks/plugins/path_provider_ios/ios"
-  permission_handler:
-    :path: ".symlinks/plugins/permission_handler/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
   cunning_document_scanner: 7cb9bd173f7cc7b11696dde98d01492187fc3a67
-  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
-  path_provider_ios: 7d7ce634493af4477d156294792024ec3485acd5
-  permission_handler: ccb20a9fad0ee9b1314a52b70b76b473c5f8dab0
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
+  permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
 
-PODFILE CHECKSUM: cc1f88378b4bfcf93a6ce00d2c587857c6008d3b
+PODFILE CHECKSUM: e78c989774f3b5b54daf69ce13097109fe4b0da3
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.12.1

@@ -1,3 +1,7 @@
+## 1.1.4
+* Fixed iOS permission issue in example
+* upgraded permission_handler
+
 ## 1.1.3
 * Fixed permanently denied permission issue
 * Merged crop option for android - Thanks Edwin
