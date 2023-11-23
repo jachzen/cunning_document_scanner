@@ -12,6 +12,8 @@ dependencies:
   flutter:
     sdk: flutter
   permission_handler: ^11.1.0
+  permission_handler_platform_interface: ^4.0.2
+  plugin_platform_interface: ^2.1.7
 
 dev_dependencies:
   flutter_test:
