@@ -5,19 +5,19 @@ homepage: https://cunning.biz
 repository: https://github.com/jachzen/cunning_document_scanner
 
 environment:
-  sdk: '>=2.15.1 <4.0.0'
+  sdk: '>=3.0.0 <4.0.0'
   flutter: ">=2.5.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: ^11.0.1
+  permission_handler: ^11.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
-  mockito: ^5.4.2
+  mockito: ^5.4.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
