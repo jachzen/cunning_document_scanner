@@ -8,7 +8,7 @@ class CunningDocumentScanner {
       MethodChannel('cunning_document_scanner');
 
   /// Call this to start get Picture workflow.
-  static Future<List<String>?> getPictures(bool crop, [int noOfPages = 100, int imageQuality = 100]) async {
+  static Future<List<String>?> getPictures([bool crop = false, int noOfPages = 100, int imageQuality = 100]) async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.camera,
     ].request();
