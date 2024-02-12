@@ -11,15 +11,15 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: ^11.1.0
-  permission_handler_platform_interface: ^4.0.2
-  plugin_platform_interface: ^2.1.7
+  permission_handler: ^11.2.1
+  permission_handler_platform_interface: ^4.1.0
+  plugin_platform_interface: ^2.1.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
-  mockito: ^5.4.3
+  mockito: ^5.4.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
