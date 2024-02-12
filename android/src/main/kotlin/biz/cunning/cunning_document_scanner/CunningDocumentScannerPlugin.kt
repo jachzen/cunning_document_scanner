@@ -21,6 +21,8 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     private var binding: ActivityPluginBinding? = null
     private var pendingResult: Result? = null
     private lateinit var activity: Activity
+    private val START_DOCUMENT_ACTIVITY: Int = 0x362738
+
 
     /// The MethodChannel that will the communication between Flutter and native Android
     ///
@@ -35,13 +37,11 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         if (call.method == "getPictures") {
-          val crop = call.argument<Boolean>("crop");
-            if (crop != null) {
-                this.pendingResult = result
-                startScan(crop)
-            } else {
-                result.error("INVALID_ARGUMENT", "The value 'crop' is not a boolean", null)
-            }
+          val crop = call.argument<Boolean>("crop") ?: true;
+	  val noOfPages = call.argument<Int>("noOfPages") ?: 50;
+	  val imageQuality = call.argument<Int>("imageQuality") ?: 100;
+          this.pendingResult = result
+          startScan(crop, noOfPages, imageQuality)
         } else {
             result.notImplemented()
         }
@@ -109,7 +109,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     /**
      * create intent to launch document scanner and set custom options
      */
-    private fun createDocumentScanIntent(crop: Boolean): Intent {
+    private fun createDocumentScanIntent(crop: Boolean, noOfPages: Int, imageQuality: Int): Intent {
         val documentScanIntent = Intent(activity, DocumentScannerActivity::class.java)
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_LET_USER_ADJUST_CROP,
@@ -117,7 +117,11 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         )
         documentScanIntent.putExtra(
             DocumentScannerExtra.EXTRA_MAX_NUM_DOCUMENTS,
-        if(crop) 100 else 1
+            noOfPages
+        )
+	documentScanIntent.putExtra(
+            DocumentScannerExtra.EXTRA_CROPPED_IMAGE_QUALITY,
+            if(imageQuality>100) 100 else if(imageQuality<0) 0 else imageQuality
         )
 
         return documentScanIntent
@@ -127,8 +131,8 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     /**
      * add document scanner result handler and launch the document scanner
      */
-    private fun startScan(crop: Boolean) {
-        val intent = createDocumentScanIntent(crop)
+    private fun startScan(crop: Boolean, noOfPages: Int, imageQuality: Int) {
+        val intent = createDocumentScanIntent(crop, noOfPages, imageQuality)
         try {
             ActivityCompat.startActivityForResult(
                 this.activity,
@@ -155,9 +159,5 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     private fun removeActivityResultListener() {
         this.delegate?.let { this.binding?.removeActivityResultListener(it) }
-    }
-
-    companion object {
-        private const val START_DOCUMENT_ACTIVITY: Int = 0x362738
     }
 }
