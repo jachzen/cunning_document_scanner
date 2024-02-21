@@ -1,3 +1,9 @@
+## 1.1.5
+* Nmed parameters
+* crop default is false
+* dependencies updated
+* min ios version 12 now
+
 ## 1.1.4
 * Fixed iOS permission issue in example
 * upgraded permission_handler
