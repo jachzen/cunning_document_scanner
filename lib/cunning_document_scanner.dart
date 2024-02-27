@@ -9,7 +9,7 @@ class CunningDocumentScanner {
 
   /// Call this to start get Picture workflow.
   static Future<List<String>?> getPictures(
-      {bool crop = false, int noOfPages = 100, int imageQuality = 100}) async {
+      {int noOfPages = 100}) async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.camera,
     ].request();
@@ -19,7 +19,7 @@ class CunningDocumentScanner {
     }
 
     final List<dynamic>? pictures = await _channel.invokeMethod('getPictures',
-        {'crop': crop, 'noOfPages': noOfPages, 'imageQuality': imageQuality});
+        {'noOfPages': noOfPages});
     return pictures?.map((e) => e as String).toList();
   }
 }

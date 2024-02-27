@@ -1,3 +1,8 @@
+## 1.2.0
+* Use ML kit on Android
+* dropped nocrop support
+* image quality dropped
+
 ## 1.1.5
 * Nmed parameters
 * crop default is false

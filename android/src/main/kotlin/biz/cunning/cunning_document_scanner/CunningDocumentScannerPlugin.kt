@@ -1,11 +1,12 @@
 package biz.cunning.cunning_document_scanner
 
 import android.app.Activity
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import androidx.core.app.ActivityCompat
-import com.websitebeaver.documentscanner.DocumentScannerActivity
-import com.websitebeaver.documentscanner.constants.DocumentScannerExtra
+import android.content.IntentSender
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_FULL
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
+import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -14,6 +15,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry
+
 
 /** CunningDocumentScannerPlugin */
 class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -37,11 +39,9 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         if (call.method == "getPictures") {
-          val crop = call.argument<Boolean>("crop") ?: true;
-	  val noOfPages = call.argument<Int>("noOfPages") ?: 50;
-	  val imageQuality = call.argument<Int>("imageQuality") ?: 100;
-          this.pendingResult = result
-          startScan(crop, noOfPages, imageQuality)
+            val noOfPages = call.argument<Int>("noOfPages") ?: 50;
+            this.pendingResult = result
+            startScan(noOfPages)
         } else {
             result.notImplemented()
         }
@@ -74,15 +74,11 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                         }
 
                         // get an array with scanned document file paths
-                        val croppedImageResults =
-                            data?.getStringArrayListExtra("croppedImageResults")?.toList()
-                                ?: throw Exception("No cropped images returned")
+                        val scanningResult: GmsDocumentScanningResult = data?.extras?.get("extra_scanning_result") as GmsDocumentScanningResult
 
-                        // return a list of file paths
-                        // removing file uri prefix as Flutter file will have problems with it
-                        val successResponse = croppedImageResults.map {
-                            it.removePrefix("file://")
-                        }.toList()
+                        val successResponse = scanningResult.pages?.map {
+                            it.imageUri.toString().removePrefix("file://")
+                        }?.toList()
 
                         // trigger the success event handler with an array of cropped images
                         this.pendingResult?.success(successResponse)
@@ -107,41 +103,26 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
 
     /**
-     * create intent to launch document scanner and set custom options
-     */
-    private fun createDocumentScanIntent(crop: Boolean, noOfPages: Int, imageQuality: Int): Intent {
-        val documentScanIntent = Intent(activity, DocumentScannerActivity::class.java)
-        documentScanIntent.putExtra(
-            DocumentScannerExtra.EXTRA_LET_USER_ADJUST_CROP,
-            crop
-        )
-        documentScanIntent.putExtra(
-            DocumentScannerExtra.EXTRA_MAX_NUM_DOCUMENTS,
-            noOfPages
-        )
-	documentScanIntent.putExtra(
-            DocumentScannerExtra.EXTRA_CROPPED_IMAGE_QUALITY,
-            if(imageQuality>100) 100 else if(imageQuality<0) 0 else imageQuality
-        )
-
-        return documentScanIntent
-    }
-
-
-    /**
      * add document scanner result handler and launch the document scanner
      */
-    private fun startScan(crop: Boolean, noOfPages: Int, imageQuality: Int) {
-        val intent = createDocumentScanIntent(crop, noOfPages, imageQuality)
-        try {
-            ActivityCompat.startActivityForResult(
-                this.activity,
-                intent,
-                START_DOCUMENT_ACTIVITY,
-                null
-            )
-        } catch (e: ActivityNotFoundException) {
-            pendingResult?.error("ERROR", "FAILED TO START ACTIVITY", null)
+    private fun startScan(noOfPages: Int) {
+        val options = GmsDocumentScannerOptions.Builder()
+            .setGalleryImportAllowed(false)
+            .setPageLimit(noOfPages)
+            .setResultFormats(RESULT_FORMAT_JPEG)
+            .setScannerMode(SCANNER_MODE_FULL)
+            .build()
+        val scanner = GmsDocumentScanning.getClient(options)
+        scanner.getStartScanIntent(activity).addOnSuccessListener {
+            try {
+                // Use a custom request code for onActivityResult identification
+                activity.startIntentSenderForResult(it, START_DOCUMENT_ACTIVITY, null, 0, 0, 0)
+
+            } catch (e: IntentSender.SendIntentException) {
+                pendingResult?.error("ERROR", "Failed to start document scanner", null)
+            }
+        }.addOnFailureListener {
+            pendingResult?.error("ERROR", "Failed to start document scanner Intent", null)
         }
     }
 
