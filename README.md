@@ -55,18 +55,25 @@ minSdkVersion should be at least 21
 
 ## How to use ?
 
+The easiest way to get a list of images is:
+
 ```
-    final imagesPath = await CunningDocumentScanner.getPicture(crop: true)
+    final imagesPath = await CunningDocumentScanner.getPictures()
 ```
 
-The path's to the cropped Images will be returned.
+Additionally you can limit the number of pages as follows:
 
+```
+    final imagesPath = await CunningDocumentScanner.getPictures(noOfPages: 1)
+```
+
+This would limit the number of pages to one.
 
 ## Contributing
 
 ### Step 1
 
-- Fork this project's repo : 
+- Fork this project's repo :
 
 ### Step 2
 
