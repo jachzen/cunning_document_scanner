@@ -73,7 +73,7 @@ This would limit the number of pages to one.
 
 ### Step 1
 
-- Fork this project's repo : 
+- Fork this project's repo :
 
 ### Step 2
 
