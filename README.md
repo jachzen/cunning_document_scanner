@@ -67,13 +67,12 @@ You can limit the number of pages as follows:
     final imagesPath = await CunningDocumentScanner.getPictures(noOfPages: 1)
 ```
 
+This would limit the number of pages to one. noOfPages also only works on Android. The parameter is never used in the iOS implementation.
 In addition, and only on Android for now, you can allow importing images from the gallery:
 
 ```
     final imagesPath = await CunningDocumentScanner.getPictures(isGalleryImportAllowed: true)
 ```
-
-This would limit the number of pages to one.
 
 ## Contributing
 
