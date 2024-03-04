@@ -61,10 +61,16 @@ The easiest way to get a list of images is:
     final imagesPath = await CunningDocumentScanner.getPictures()
 ```
 
-Additionally you can limit the number of pages as follows:
+You can limit the number of pages as follows:
 
 ```
     final imagesPath = await CunningDocumentScanner.getPictures(noOfPages: 1)
+```
+
+In addition, and only on Android for now, you can allow importing images from the gallery:
+
+```
+    final imagesPath = await CunningDocumentScanner.getPictures(isGalleryImportAllowed: true)
 ```
 
 This would limit the number of pages to one.
