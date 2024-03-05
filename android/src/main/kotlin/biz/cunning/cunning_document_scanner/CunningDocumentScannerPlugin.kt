@@ -40,8 +40,9 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     override fun onMethodCall(call: MethodCall, result: Result) {
         if (call.method == "getPictures") {
             val noOfPages = call.argument<Int>("noOfPages") ?: 50;
+            val isGalleryImportAllowed = call.argument<Boolean>("isGalleryImportAllowed") ?: false;
             this.pendingResult = result
-            startScan(noOfPages)
+            startScan(noOfPages, isGalleryImportAllowed)
         } else {
             result.notImplemented()
         }
@@ -105,9 +106,9 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     /**
      * add document scanner result handler and launch the document scanner
      */
-    private fun startScan(noOfPages: Int) {
+    private fun startScan(noOfPages: Int, isGalleryImportAllowed: Boolean) {
         val options = GmsDocumentScannerOptions.Builder()
-            .setGalleryImportAllowed(false)
+            .setGalleryImportAllowed(isGalleryImportAllowed)
             .setPageLimit(noOfPages)
             .setResultFormats(RESULT_FORMAT_JPEG)
             .setScannerMode(SCANNER_MODE_FULL)
