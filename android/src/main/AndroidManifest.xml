@@ -6,5 +6,20 @@
     <uses-feature android:name="android.hardware.camera"
                   android:required="true" />
     <application android:theme="@style/Theme.AppCompat.NoActionBar">
+        <activity
+            android:name=".fallback.DocumentScannerActivity"
+            android:configChanges="orientation|screenSize"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.FullScreen" />
+
+        <provider
+            android:name="biz.cunning.cunning_document_scanner.fallback.DocumentScannerFileProvider"
+            android:authorities="${applicationId}.DocumentScannerFileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

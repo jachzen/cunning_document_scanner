@@ -1,7 +1,13 @@
 package biz.cunning.cunning_document_scanner
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.content.IntentSender
+import androidx.core.app.ActivityCompat
+import biz.cunning.cunning_document_scanner.fallback.DocumentScannerActivity
+import biz.cunning.cunning_document_scanner.fallback.constants.DocumentScannerExtra
+import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_FULL
@@ -24,6 +30,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     private var pendingResult: Result? = null
     private lateinit var activity: Activity
     private val START_DOCUMENT_ACTIVITY: Int = 0x362738
+    private val START_DOCUMENT_FB_ACTIVITY: Int = 0x362737
 
 
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -63,35 +70,76 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         this.binding = binding
         if (this.delegate == null) {
             this.delegate = PluginRegistry.ActivityResultListener { requestCode, resultCode, data ->
-                if (requestCode != START_DOCUMENT_ACTIVITY) {
+                if (requestCode != START_DOCUMENT_ACTIVITY && requestCode != START_DOCUMENT_FB_ACTIVITY) {
                     return@ActivityResultListener false
                 }
-                when (resultCode) {
-                    Activity.RESULT_OK -> {
-                        // check for errors
-                        val error = data?.extras?.getString("error")
-                        if (error != null) {
-                            throw Exception("error - $error")
+                if (requestCode == START_DOCUMENT_ACTIVITY) {
+                    when (resultCode) {
+                        Activity.RESULT_OK -> {
+                            // check for errors
+                            val error = data?.extras?.getString("error")
+                            if (error != null) {
+                                throw Exception("error - $error")
+                            }
+
+                            // get an array with scanned document file paths
+                            val scanningResult: GmsDocumentScanningResult =
+                                data?.extras?.getParcelable<GmsDocumentScanningResult>("extra_scanning_result")
+                                    ?: return@ActivityResultListener false
+
+                            val successResponse = scanningResult.pages?.map {
+                                it.imageUri.toString().removePrefix("file://")
+                            }?.toList()
+
+                            // trigger the success event handler with an array of cropped images
+                            this.pendingResult?.success(successResponse)
+                            return@ActivityResultListener true
                         }
 
-                        // get an array with scanned document file paths
-                        val scanningResult: GmsDocumentScanningResult = data?.extras?.get("extra_scanning_result") as GmsDocumentScanningResult
+                        Activity.RESULT_CANCELED -> {
+                            // user closed camera
+                            this.pendingResult?.success(emptyList<String>())
+                            return@ActivityResultListener true
+                        }
 
-                        val successResponse = scanningResult.pages?.map {
-                            it.imageUri.toString().removePrefix("file://")
-                        }?.toList()
+                        else -> {
+                            return@ActivityResultListener false
+                        }
+                    }
+                } else {
+                    when (resultCode) {
+                        Activity.RESULT_OK -> {
+                            // check for errors
+                            val error = data?.extras?.getString("error")
+                            if (error != null) {
+                                throw Exception("error - $error")
+                            }
 
-                        // trigger the success event handler with an array of cropped images
-                        this.pendingResult?.success(successResponse)
-                        return@ActivityResultListener true
-                    }
-                    Activity.RESULT_CANCELED -> {
-                        // user closed camera
-                        this.pendingResult?.success(emptyList<String>())
-                        return@ActivityResultListener true
-                    }
-                    else -> {
-                        return@ActivityResultListener false
+                            // get an array with scanned document file paths
+                            val croppedImageResults =
+                                data?.getStringArrayListExtra("croppedImageResults")?.toList()
+                                    ?: throw Exception("No cropped images returned")
+
+                            // return a list of file paths
+                            // removing file uri prefix as Flutter file will have problems with it
+                            val successResponse = croppedImageResults.map {
+                                it.removePrefix("file://")
+                            }.toList()
+
+                            // trigger the success event handler with an array of cropped images
+                            this.pendingResult?.success(successResponse)
+                            return@ActivityResultListener true
+                        }
+
+                        Activity.RESULT_CANCELED -> {
+                            // user closed camera
+                            this.pendingResult?.success(emptyList<String>())
+                            return@ActivityResultListener true
+                        }
+
+                        else -> {
+                            return@ActivityResultListener false
+                        }
                     }
                 }
             }
@@ -100,6 +148,21 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         }
 
         binding.addActivityResultListener(delegate!!)
+    }
+
+
+    /**
+     * create intent to launch document scanner and set custom options
+     */
+    private fun createDocumentScanIntent(noOfPages: Int): Intent {
+        val documentScanIntent = Intent(activity, DocumentScannerActivity::class.java)
+
+        documentScanIntent.putExtra(
+            DocumentScannerExtra.EXTRA_MAX_NUM_DOCUMENTS,
+            noOfPages
+        )
+
+        return documentScanIntent
     }
 
 
@@ -123,7 +186,21 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                 pendingResult?.error("ERROR", "Failed to start document scanner", null)
             }
         }.addOnFailureListener {
-            pendingResult?.error("ERROR", "Failed to start document scanner Intent", null)
+            if (it is MlKitException) {
+                val intent = createDocumentScanIntent(noOfPages)
+                try {
+                    ActivityCompat.startActivityForResult(
+                        this.activity,
+                        intent,
+                        START_DOCUMENT_FB_ACTIVITY,
+                        null
+                    )
+                } catch (e: ActivityNotFoundException) {
+                    pendingResult?.error("ERROR", "FAILED TO START ACTIVITY", null)
+                }
+            } else {
+                pendingResult?.error("ERROR", "Failed to start document scanner Intent", null)
+            }
         }
     }
 

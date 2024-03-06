@@ -1,3 +1,6 @@
+## 1.2.1
+* Add fallback for Android devices < 1.7GB RAM
+
 ## 1.2.0
 * Use ML kit on Android
 * dropped nocrop support
