@@ -15,16 +15,16 @@ import kotlin.math.sqrt
 
 class ImageUtil {
 
-    fun getImageFromFilePath(filePath: String): Bitmap {
+    fun getImageFromFilePath(filePath: String): Bitmap? {
         val rotation = getRotationDegrees(filePath)
-        var bitmap = BitmapFactory.decodeFile(filePath)
+        val bitmap = BitmapFactory.decodeFile(filePath) ?: return null
 
-        // Correct image rotation
-        if (rotation != 0) {
+        return if (rotation != 0) {
             val matrix = Matrix().apply { postRotate(rotation.toFloat()) }
-            bitmap = Bitmap.createBitmap(bitmap!!, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        } else {
+            bitmap
         }
-        return bitmap!!
     }
 
     private fun getRotationDegrees(filePath: String): Int {
@@ -41,8 +41,8 @@ class ImageUtil {
     }
 
 
-    fun crop(photoFilePath: String, corners: Quad): Bitmap {
-        val bitmap = getImageFromFilePath(photoFilePath)
+    fun crop(photoFilePath: String, corners: Quad): Bitmap? {
+        val bitmap = getImageFromFilePath(photoFilePath) ?: return null
 
         // Convert Quad corners to a float array manually
         val src = floatArrayOf(
