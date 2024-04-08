@@ -79,7 +79,8 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                             // check for errors
                             val error = data?.extras?.getString("error")
                             if (error != null) {
-                                throw Exception("error - $error")
+                                pendingResult?.error("ERROR", "error - $error", null)
+                                return@ActivityResultListener true
                             }
 
                             // get an array with scanned document file paths
@@ -92,19 +93,16 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                             }?.toList()
 
                             // trigger the success event handler with an array of cropped images
-                            this.pendingResult?.success(successResponse)
+                            pendingResult?.success(successResponse)
                             return@ActivityResultListener true
                         }
 
                         Activity.RESULT_CANCELED -> {
                             // user closed camera
-                            this.pendingResult?.success(emptyList<String>())
+                            pendingResult?.success(emptyList<String>())
                             return@ActivityResultListener true
                         }
-
-                        else -> {
-                            return@ActivityResultListener false
-                        }
+                        else -> return@ActivityResultListener false
                     }
                 } else {
                     when (resultCode) {
@@ -112,13 +110,17 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                             // check for errors
                             val error = data?.extras?.getString("error")
                             if (error != null) {
-                                throw Exception("error - $error")
+                                pendingResult?.error("ERROR", "error - $error", null)
+                                return@ActivityResultListener true
                             }
 
                             // get an array with scanned document file paths
                             val croppedImageResults =
                                 data?.getStringArrayListExtra("croppedImageResults")?.toList()
-                                    ?: throw Exception("No cropped images returned")
+                                    ?: let {
+                                        pendingResult?.error("ERROR", "No cropped images returned", null)
+                                        return@ActivityResultListener true
+                                    }
 
                             // return a list of file paths
                             // removing file uri prefix as Flutter file will have problems with it
@@ -127,19 +129,16 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                             }.toList()
 
                             // trigger the success event handler with an array of cropped images
-                            this.pendingResult?.success(successResponse)
+                            pendingResult?.success(successResponse)
                             return@ActivityResultListener true
                         }
 
                         Activity.RESULT_CANCELED -> {
                             // user closed camera
-                            this.pendingResult?.success(emptyList<String>())
+                            pendingResult?.success(emptyList<String>())
                             return@ActivityResultListener true
                         }
-
-                        else -> {
-                            return@ActivityResultListener false
-                        }
+                        else -> return@ActivityResultListener false
                     }
                 }
             }

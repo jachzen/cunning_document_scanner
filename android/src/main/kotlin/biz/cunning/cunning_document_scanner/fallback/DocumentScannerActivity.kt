@@ -80,7 +80,17 @@ class DocumentScannerActivity : AppCompatActivity() {
             }
 
             // get bitmap from photo file path
-            val photo: Bitmap = ImageUtil().getImageFromFilePath(originalPhotoPath)
+            val photo: Bitmap? = try {
+                ImageUtil().getImageFromFilePath(originalPhotoPath)
+            } catch (exception: Exception) {
+                finishIntentWithError("Unable to get bitmap: ${exception.localizedMessage}")
+                return@CameraUtil
+            }
+
+            if (photo == null) {
+                finishIntentWithError("Document bitmap is null.")
+                return@CameraUtil
+            }
 
             // get document corners by detecting them, or falling back to photo corners with
             // slight margin if we can't find the corners
@@ -313,13 +323,18 @@ class DocumentScannerActivity : AppCompatActivity() {
         val croppedImageResults = arrayListOf<String>()
         for ((pageNumber, document) in documents.withIndex()) {
             // crop document photo by using corners
-            val croppedImage: Bitmap = try {
+            val croppedImage: Bitmap? = try {
                 ImageUtil().crop(
                     document.originalPhotoFilePath,
                     document.corners
                 )
             } catch (exception: Exception) {
                 finishIntentWithError("unable to crop image: ${exception.message}")
+                return
+            }
+
+            if (croppedImage == null) {
+                finishIntentWithError("Result of cropping is null")
                 return
             }
 
