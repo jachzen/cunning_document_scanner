@@ -95,9 +95,12 @@ There are some features in Android that allow you to adjust the scanner that wil
 
 ```
     final imagesPath = await CunningDocumentScanner.getPictures(
-      noOfPages: 1, // Limit the number of pages to 1
-      isGalleryImportAllowed, // Allow the user to also pick an image from his gallery
-   )
+      androidOptions: const AndroidScannerOptions(
+         noOfPages: 1, // Limit the number of pages to 1
+         isGalleryImportAllowed: true, // Allow the user to also pick an image from his gallery
+         scannerMode: AndroidScannerMode.scannerModeFull,
+      )
+    )
 ```
 
 ## Installation
