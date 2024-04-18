@@ -20,6 +20,10 @@ final class ReviewImageViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        navigationItem.title = "Review"
+        
+        view.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
         imageView.image = image
     }
     

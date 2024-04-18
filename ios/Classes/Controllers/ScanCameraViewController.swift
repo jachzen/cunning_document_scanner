@@ -7,20 +7,25 @@
 
 import UIKit
 import WeScan
+import SVGKit
 
 final class ScanCameraViewController: UIViewController {
 
     @IBOutlet private weak var cameraView: UIView!
     @IBOutlet private weak var bottomView: UIView!
-    @IBOutlet private weak var galleryButton: UIButton!
-    @IBOutlet private weak var autoModeButton: UIButton!
-    @IBOutlet private weak var flashButton: UIBarButtonItem!
+    @IBOutlet private weak var shutterView: UIView!
+    @IBOutlet private weak var galleryButton: UIImageView!
+    @IBOutlet private weak var autoModeSwitch: UISwitch!
+    @IBOutlet private weak var autoModeLabel: UILabel!
+    @IBOutlet private weak var backButton: UIBarButtonItem!
     var controller: CameraScannerViewController!
     var isGalleryImportAllowed: Bool = false
     var isAutoScanEnabled: Bool = true
     var isAutoScanAllowed: Bool = true
     var isFlashAllowed: Bool = true
     var result: FlutterResult!;
+    
+    var flashEnabled = false;
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,8 +41,25 @@ final class ScanCameraViewController: UIViewController {
     }
 
     private func setupView() {
+        navigationItem.title = "Scan"
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: SwiftCunningDocumentScannerPlugin.tintColor]
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: SwiftCunningDocumentScannerPlugin.tintColor]
+        navigationController?.navigationBar.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
+        navigationController?.view.tintColor = SwiftCunningDocumentScannerPlugin.tintColor
         navigationController?.interactivePopGestureRecognizer?.isEnabled = false
         
+        self.view.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
+        bottomView.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
+        
+        setCameraView()
+        setAutoModeButtonView()
+        setGalleryButtonView()
+        setFlashButtonView()
+        setShutterButtonView()
+        setBackButtonView()
+    }
+    
+    private func setCameraView(){
         controller = CameraScannerViewController()
         controller.modalPresentationStyle = .fullScreen
         controller.view.frame = cameraView.bounds
@@ -51,39 +73,63 @@ final class ScanCameraViewController: UIViewController {
         }else{
             controller.isAutoScanEnabled = isAutoScanEnabled;
         }
-        
-        setAutoModeButtonView()
-        setGalleryButtonView()
-        setFlashButtonView()
+       
     }
     
     private func setAutoModeButtonView() {
-        autoModeButton.isHidden = !isAutoScanAllowed
+        autoModeSwitch.tintColor = SwiftCunningDocumentScannerPlugin.tintColor
+        autoModeSwitch.isHidden = !isAutoScanAllowed
+        autoModeSwitch.isOn = controller.isAutoScanEnabled
+        autoModeLabel.textColor = SwiftCunningDocumentScannerPlugin.tintColor
+        
         if(controller.isAutoScanEnabled) {
-            autoModeButton.setTitle("Auto", for: .normal)
+            autoModeLabel.text = "Auto"
         } else {
-            autoModeButton.setTitle("Manual", for: .normal)
+            autoModeLabel.text = "Manual"
         }
     }
     
     private func setGalleryButtonView() {
+        galleryButton.tintColor = SwiftCunningDocumentScannerPlugin.tintColor
         galleryButton.isHidden = !isGalleryImportAllowed
+        galleryButton.isUserInteractionEnabled = true
+        galleryButton.addGestureRecognizer(UITapGestureRecognizer.init(target: self, action:#selector(galleryTapped)))
     }
     
     private func setFlashButtonView() {
-        if #available(iOS 16.0, *) {
-            flashButton.isHidden = !isFlashAllowed
-        }else{
-            flashButton.isEnabled = !isFlashAllowed
+        let imageOff = SVGKImage(named: "flash_off",in: Bundle(for: CunningDocumentScannerPlugin.self)).uiImage
+        
+        let imageOn = SVGKImage(named: "flash_on",in: Bundle(for: CunningDocumentScannerPlugin.self)).uiImage
+        
+        let flashButton = UIBarButtonItem()
+        flashButton.image = flashEnabled ? imageOn : imageOff
+        flashButton.target = self
+        flashButton.action = #selector(flashTapped)
+    
+        if(isFlashAllowed){
+           navigationItem.setRightBarButton(flashButton,animated: true)
         }
     }
+    
+    private func setBackButtonView() {
+    }
+    
+    private func setShutterButtonView() {
+        let shutterButton = ShutterButton(frame: shutterView.bounds)
+        shutterButton.tintColor = SwiftCunningDocumentScannerPlugin.tintColor
+        shutterButton.addTarget(self, action: #selector(captureTapped), for: .touchDown)
+        shutterView.addSubview(shutterButton)
+    }
+
 
     @IBAction func flashTapped(_ sender: UIButton) {
         controller.toggleFlash()
+        flashEnabled = !flashEnabled
+        setFlashButtonView()
     }
 
-    @IBAction func autoModeTapped(_ sender: UIButton) {
-        controller.isAutoScanEnabled =  !controller.isAutoScanEnabled
+    @IBAction func autoModeTapped(_ sender: UISwitch) {
+        controller.isAutoScanEnabled =  sender.isOn
         setAutoModeButtonView()
     }
     

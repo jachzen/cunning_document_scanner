@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -34,12 +35,17 @@ class IOSScannerOptions {
     this.isAutoScanAllowed = true,
     this.isAutoScanEnabled = true,
     this.isFlashAllowed = true,
+    this.backgroundColor = Colors.white,
+    this.tintColor = Colors.blue,
   });
 
   final bool isGalleryImportAllowed;
   final bool isAutoScanAllowed;
   final bool isAutoScanEnabled;
   final bool isFlashAllowed;
+
+  final Color backgroundColor;
+  final Color tintColor;
 }
 
 class CunningDocumentScanner {
@@ -75,6 +81,8 @@ class CunningDocumentScanner {
         'isAutoScanAllowed': iOSOptions.isAutoScanAllowed,
         'isAutoScanEnabled': iOSOptions.isAutoScanEnabled,
         'isFlashAllowed': iOSOptions.isFlashAllowed,
+        'backgroundColor': iOSOptions.backgroundColor.value,
+        'tintColor': iOSOptions.tintColor.value,
       });
     }
     return pictures?.map((e) => e as String).toList();

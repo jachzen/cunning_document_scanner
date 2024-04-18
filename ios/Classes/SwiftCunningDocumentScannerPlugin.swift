@@ -5,6 +5,10 @@ import VisionKit
 
 @available(iOS 13.0, *)
 public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin {
+    
+    public static var backgroundColor: UIColor =  UIColor.white;
+    public static var tintColor: UIColor =  UIColor.blue;
+    
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "cunning_document_scanner", binaryMessenger: registrar.messenger())
     let instance = SwiftCunningDocumentScannerPlugin()
@@ -17,7 +21,15 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin {
     let isAutoScanEnabled = args["isAutoScanEnabled"] as? Bool ?? false
     let isAutoScanAllowed = args["isAutoScanAllowed"] as? Bool ?? false
     let isFlashAllowed = args["isFlashAllowed"] as? Bool ?? false
-      
+    let backgroundColorInt = args["backgroundColor"] as? Int
+    let tintColorInt = args["tintColor"] as? Int
+    
+      if(backgroundColorInt != nil){
+          SwiftCunningDocumentScannerPlugin.backgroundColor = UIColor(hexa: backgroundColorInt!)
+      }
+      if(tintColorInt != nil){
+          SwiftCunningDocumentScannerPlugin.tintColor = UIColor(hexa: tintColorInt!)
+      }
     if (call.method == "getPictures")
     {
      if let viewController = UIApplication.shared.delegate?.window??.rootViewController as? FlutterViewController {
@@ -26,7 +38,6 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin {
              result(nil)
              return
          }
-         controller.modalPresentationStyle = .fullScreen
          (controller.viewControllers.first as? ScanCameraViewController)?.setParams(
             result: result,
             isGalleryImportAllowed: isGalleryImportAllowed,

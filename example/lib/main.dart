@@ -56,6 +56,9 @@ class _MyAppState extends State<MyApp> {
             ),
             iOSOptions: const IOSScannerOptions(
               isGalleryImportAllowed: true,
+              isFlashAllowed: true,
+              backgroundColor: Color(0xFF333333),
+              tintColor: Colors.white,
             ),
           ) ??
           [];
