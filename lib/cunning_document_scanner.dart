@@ -31,11 +31,15 @@ enum AndroidScannerMode {
 class IOSScannerOptions {
   const IOSScannerOptions({
     this.isGalleryImportAllowed = false,
+    this.isAutoScanAllowed = true,
     this.isAutoScanEnabled = true,
+    this.isFlashAllowed = true,
   });
 
   final bool isGalleryImportAllowed;
+  final bool isAutoScanAllowed;
   final bool isAutoScanEnabled;
+  final bool isFlashAllowed;
 }
 
 class CunningDocumentScanner {
@@ -68,7 +72,9 @@ class CunningDocumentScanner {
     } else if (Platform.isIOS) {
       pictures = await _channel.invokeMethod('getPictures', {
         'isGalleryImportAllowed': iOSOptions.isGalleryImportAllowed,
+        'isAutoScanAllowed': iOSOptions.isAutoScanAllowed,
         'isAutoScanEnabled': iOSOptions.isAutoScanEnabled,
+        'isFlashAllowed': iOSOptions.isFlashAllowed,
       });
     }
     return pictures?.map((e) => e as String).toList();

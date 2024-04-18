@@ -1,9 +1,8 @@
 //
-//  NewCameraViewController.swift
-//  WeScanSampleProject
+//  ScanCameraViewController.swift
+//  cunning_document_scanner
 //
-//  Created by Chawatvish Worrapoj on 7/1/2020
-//  Copyright © 2020 WeTransfer. All rights reserved.
+//  Created by Romain Boucher on 18/04/2024.
 //
 
 import UIKit
@@ -15,9 +14,12 @@ final class ScanCameraViewController: UIViewController {
     @IBOutlet private weak var bottomView: UIView!
     @IBOutlet private weak var galleryButton: UIButton!
     @IBOutlet private weak var autoModeButton: UIButton!
+    @IBOutlet private weak var flashButton: UIBarButtonItem!
     var controller: CameraScannerViewController!
     var isGalleryImportAllowed: Bool = false
     var isAutoScanEnabled: Bool = true
+    var isAutoScanAllowed: Bool = true
+    var isFlashAllowed: Bool = true
     var result: FlutterResult!;
     
     override func viewDidLoad() {
@@ -25,10 +27,12 @@ final class ScanCameraViewController: UIViewController {
         setupView()
     }
     
-    public func setParams(result: @escaping FlutterResult,  isGalleryImportAllowed: Bool = false, isAutoScanEnabled: Bool = true) {
+    public func setParams(result: @escaping FlutterResult,  isGalleryImportAllowed: Bool, isAutoScanEnabled: Bool, isAutoScanAllowed: Bool, isFlashAllowed: Bool) {
         self.result = result
         self.isGalleryImportAllowed = isGalleryImportAllowed
         self.isAutoScanEnabled = isAutoScanEnabled
+        self.isAutoScanAllowed = isAutoScanAllowed
+        self.isFlashAllowed = isFlashAllowed
     }
 
     private func setupView() {
@@ -42,17 +46,35 @@ final class ScanCameraViewController: UIViewController {
         self.addChild(controller)
         controller.didMove(toParent: self)
         controller.delegate = self
-        controller.isAutoScanEnabled = isAutoScanEnabled;
-        galleryButton.isHidden = !isGalleryImportAllowed
+        if(!isAutoScanAllowed){
+            controller.isAutoScanEnabled = false;
+        }else{
+            controller.isAutoScanEnabled = isAutoScanEnabled;
+        }
         
         setAutoModeButtonView()
+        setGalleryButtonView()
+        setFlashButtonView()
     }
     
     private func setAutoModeButtonView() {
+        autoModeButton.isHidden = !isAutoScanAllowed
         if(controller.isAutoScanEnabled) {
             autoModeButton.setTitle("Auto", for: .normal)
         } else {
             autoModeButton.setTitle("Manual", for: .normal)
+        }
+    }
+    
+    private func setGalleryButtonView() {
+        galleryButton.isHidden = !isGalleryImportAllowed
+    }
+    
+    private func setFlashButtonView() {
+        if #available(iOS 16.0, *) {
+            flashButton.isHidden = !isFlashAllowed
+        }else{
+            flashButton.isEnabled = !isFlashAllowed
         }
     }
 

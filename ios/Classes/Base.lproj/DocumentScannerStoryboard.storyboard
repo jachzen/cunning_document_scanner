@@ -130,6 +130,7 @@
                         <outlet property="autoModeButton" destination="96X-7m-R3q" id="39a-6B-oly"/>
                         <outlet property="bottomView" destination="4aT-cu-5f4" id="BIu-nN-k2G"/>
                         <outlet property="cameraView" destination="Y6q-Kh-vT8" id="uS9-Ol-WO8"/>
+                        <outlet property="flashButton" destination="FQF-Yl-l6K" id="d75-oM-RpI"/>
                         <outlet property="galleryButton" destination="Le6-0S-0Tq" id="xOj-7N-atR"/>
                         <segue destination="Nx9-dl-gAM" kind="show" id="3Tr-ng-noF"/>
                     </connections>

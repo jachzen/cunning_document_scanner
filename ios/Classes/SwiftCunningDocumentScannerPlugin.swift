@@ -15,6 +15,8 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin {
     let args = call.arguments as! Dictionary<String, Any>
     let isGalleryImportAllowed = args["isGalleryImportAllowed"] as? Bool ?? false
     let isAutoScanEnabled = args["isAutoScanEnabled"] as? Bool ?? false
+    let isAutoScanAllowed = args["isAutoScanAllowed"] as? Bool ?? false
+    let isFlashAllowed = args["isFlashAllowed"] as? Bool ?? false
       
     if (call.method == "getPictures")
     {
@@ -28,7 +30,9 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin {
          (controller.viewControllers.first as? ScanCameraViewController)?.setParams(
             result: result,
             isGalleryImportAllowed: isGalleryImportAllowed,
-            isAutoScanEnabled: isAutoScanEnabled
+            isAutoScanEnabled: isAutoScanEnabled,
+            isAutoScanAllowed: isAutoScanAllowed,
+            isFlashAllowed: isFlashAllowed
          )
          
          viewController.present(controller, animated: true, completion: nil)
