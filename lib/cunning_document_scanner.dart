@@ -28,8 +28,19 @@ enum AndroidScannerMode {
   final int value;
 }
 
+class IOSScannerOptions {
+  const IOSScannerOptions({
+    this.isGalleryImportAllowed = false,
+    this.isAutoScanEnabled = true,
+  });
+
+  final bool isGalleryImportAllowed;
+  final bool isAutoScanEnabled;
+}
+
 class CunningDocumentScanner {
   static const _defaultAndroidOptions = AndroidScannerOptions();
+  static const _defaultIOSOptions = IOSScannerOptions();
 
   static const MethodChannel _channel =
       MethodChannel('cunning_document_scanner');
@@ -37,6 +48,7 @@ class CunningDocumentScanner {
   /// Call this to start get Picture workflow.
   static Future<List<String>?> getPictures({
     AndroidScannerOptions androidOptions = _defaultAndroidOptions,
+    IOSScannerOptions iOSOptions = _defaultIOSOptions,
   }) async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.camera,
@@ -54,7 +66,10 @@ class CunningDocumentScanner {
         'scannerMode': androidOptions.scannerMode.value,
       });
     } else if (Platform.isIOS) {
-      pictures = await _channel.invokeMethod('getPictures', {});
+      pictures = await _channel.invokeMethod('getPictures', {
+        'isGalleryImportAllowed': iOSOptions.isGalleryImportAllowed,
+        'isAutoScanEnabled': iOSOptions.isAutoScanEnabled,
+      });
     }
     return pictures?.map((e) => e as String).toList();
   }

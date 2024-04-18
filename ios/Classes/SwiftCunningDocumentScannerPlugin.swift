@@ -4,10 +4,7 @@ import Vision
 import VisionKit
 
 @available(iOS 13.0, *)
-public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate {
-   var resultChannel :FlutterResult?
-   var presentingController: VNDocumentCameraViewController?
-
+public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "cunning_document_scanner", binaryMessenger: registrar.messenger())
     let instance = SwiftCunningDocumentScannerPlugin()
@@ -15,49 +12,31 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    if call.method == "getPictures" {
-            let presentedVC: UIViewController? = UIApplication.shared.keyWindow?.rootViewController
-            self.resultChannel = result
-            self.presentingController = VNDocumentCameraViewController()
-            self.presentingController!.delegate = self
-            presentedVC?.present(self.presentingController!, animated: true)
-        } else {
-            result(FlutterMethodNotImplemented)
-            return
-        }
+    let args = call.arguments as! Dictionary<String, Any>
+    let isGalleryImportAllowed = args["isGalleryImportAllowed"] as? Bool ?? false
+    let isAutoScanEnabled = args["isAutoScanEnabled"] as? Bool ?? false
+      
+    if (call.method == "getPictures")
+    {
+     if let viewController = UIApplication.shared.delegate?.window??.rootViewController as? FlutterViewController {
+         let storyboard = UIStoryboard(name: "DocumentScannerStoryboard", bundle:  Bundle(for: CunningDocumentScannerPlugin.self))
+         guard let controller = storyboard.instantiateInitialViewController() as? UINavigationController else {
+             result(nil)
+             return
+         }
+         controller.modalPresentationStyle = .fullScreen
+         (controller.viewControllers.first as? ScanCameraViewController)?.setParams(
+            result: result,
+            isGalleryImportAllowed: isGalleryImportAllowed,
+            isAutoScanEnabled: isAutoScanEnabled
+         )
+         
+         viewController.present(controller, animated: true, completion: nil)
+     } else{
+         result(nil)
+     }
+    }else{
+        result(FlutterMethodNotImplemented)
+    }
   }
-
-
-    func getDocumentsDirectory() -> URL {
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let documentsDirectory = paths[0]
-        return documentsDirectory
-    }
-
-    public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
-        let tempDirPath = self.getDocumentsDirectory()
-        let currentDateTime = Date()
-        let df = DateFormatter()
-        df.dateFormat = "yyyyMMdd-HHmmss"
-        let formattedDate = df.string(from: currentDateTime)
-        var filenames: [String] = []
-        for i in 0 ... scan.pageCount - 1 {
-            let page = scan.imageOfPage(at: i)
-            let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).png")
-            try? page.pngData()?.write(to: url)
-            filenames.append(url.path)
-        }
-        resultChannel?(filenames)
-        presentingController?.dismiss(animated: true)
-    }
-
-    public func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
-        resultChannel?(nil)
-        presentingController?.dismiss(animated: true)
-    }
-
-    public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
-        resultChannel?(nil)
-        presentingController?.dismiss(animated: true)
-    }
 }

@@ -54,6 +54,9 @@ class _MyAppState extends State<MyApp> {
               scannerMode: AndroidScannerMode.scannerModeBase,
               isGalleryImportAllowed: true,
             ),
+            iOSOptions: const IOSScannerOptions(
+              isGalleryImportAllowed: true,
+            ),
           ) ??
           [];
       if (!mounted) return;
