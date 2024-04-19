@@ -81,6 +81,22 @@ platform :ios, '13.0'
      end
    end
    ```
+3. Add this line to your Podfile in your project:
+
+```
+pod 'WeScan', :path => '.symlinks/plugins/cuning_document_scanner/ios/WeScan-3.0.0'
+```
+
+=> like this below:
+
+```
+target 'Runner' do
+  use_frameworks!
+  use_modular_headers!
+  pod 'WeScan', :path => '.symlinks/plugins/cuning_document_scanner/ios/WeScan-3.0.0'
+  flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+end
+```
 
 ## How to use ?
 
