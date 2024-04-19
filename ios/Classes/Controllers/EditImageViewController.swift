@@ -34,9 +34,10 @@ class EditImageViewController : UIViewController{
         
         self.view.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
         editImageView.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
-        
+        let imageForced = captureImage.forceSameOrientation()
+        let orientedImage = UIImage(cgImage: imageForced.cgImage!, scale: imageForced.scale, orientation: .down)
         controller = WeScan.EditImageViewController(
-            image: captureImage,
+            image: orientedImage,
             quad: quad,
             strokeColor: UIColor(red: (69.0 / 255.0), green: (194.0 / 255.0), blue: (177.0 / 255.0), alpha: 1.0).cgColor
         )
