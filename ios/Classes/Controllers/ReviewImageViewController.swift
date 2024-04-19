@@ -10,6 +10,7 @@ import Foundation
 final class ReviewImageViewController: UIViewController {
 
     @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet private weak var doneButton: UIBarButtonItem!
     var image: UIImage!
     var result: FlutterResult!
 
@@ -20,8 +21,8 @@ final class ReviewImageViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        navigationItem.title = "Review"
+        navigationItem.title = NSLocalizedString("review.title", bundle: Bundle(for: CunningDocumentScannerPlugin.self), comment: "Localizable")
+        doneButton.title = NSLocalizedString("review.button.done", bundle: Bundle(for: CunningDocumentScannerPlugin.self), comment: "Localizable")
         
         view.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
         imageView.image = image

@@ -41,7 +41,7 @@ final class ScanCameraViewController: UIViewController {
     }
 
     private func setupView() {
-        navigationItem.title = "Scan"
+        navigationItem.title = NSLocalizedString("scan.title", bundle: Bundle(for: CunningDocumentScannerPlugin.self), comment: "Localizable")
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: SwiftCunningDocumentScannerPlugin.tintColor]
         navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor: SwiftCunningDocumentScannerPlugin.tintColor]
         navigationController?.navigationBar.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
@@ -80,12 +80,13 @@ final class ScanCameraViewController: UIViewController {
         autoModeSwitch.tintColor = SwiftCunningDocumentScannerPlugin.tintColor
         autoModeSwitch.isHidden = !isAutoScanAllowed
         autoModeSwitch.isOn = controller.isAutoScanEnabled
+        autoModeLabel.isHidden = !isAutoScanAllowed
         autoModeLabel.textColor = SwiftCunningDocumentScannerPlugin.tintColor
         
         if(controller.isAutoScanEnabled) {
-            autoModeLabel.text = "Auto"
+            autoModeLabel.text = NSLocalizedString("scanning.auto", bundle: Bundle(for: CunningDocumentScannerPlugin.self), comment: "Localizable")
         } else {
-            autoModeLabel.text = "Manual"
+            autoModeLabel.text = NSLocalizedString("scanning.manual", bundle: Bundle(for: CunningDocumentScannerPlugin.self), comment: "Localizable")
         }
     }
     
@@ -112,6 +113,7 @@ final class ScanCameraViewController: UIViewController {
     }
     
     private func setBackButtonView() {
+        backButton.title = NSLocalizedString("scanning.cancel", bundle: Bundle(for: CunningDocumentScannerPlugin.self), comment: "Localizable")
     }
     
     private func setShutterButtonView() {

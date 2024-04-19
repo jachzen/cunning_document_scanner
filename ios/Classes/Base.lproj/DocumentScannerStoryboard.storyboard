@@ -187,19 +187,15 @@
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="roo-mv-ZVn">
-                        <barButtonItem key="rightBarButtonItem" style="plain" id="X8R-eb-yGb">
-                            <button key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" id="NSF-ey-4kF">
-                                <rect key="frame" x="322" y="7" width="55" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Validate"/>
-                                <connections>
-                                    <action selector="cropTapped:" destination="Nx9-dl-gAM" eventType="touchUpInside" id="xbJ-SS-Kf1"/>
-                                </connections>
-                            </button>
+                        <barButtonItem key="rightBarButtonItem" title="Next" id="5kh-8J-L78">
+                            <connections>
+                                <action selector="nextTapped:" destination="Nx9-dl-gAM" id="fib-Sf-uWU"/>
+                            </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="editImageView" destination="8gN-Gd-pGZ" id="cm5-H4-ghd"/>
+                        <outlet property="nextButton" destination="5kh-8J-L78" id="a35-mv-yyO"/>
                         <outlet property="rotateButton" destination="T13-cY-E2m" id="b6h-jD-CuZ"/>
                         <segue destination="E2U-dH-ckF" kind="show" id="1Bs-cG-vZB"/>
                     </connections>
@@ -237,6 +233,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="doneButton" destination="oBR-3m-lDi" id="4oS-IR-73o"/>
                         <outlet property="imageView" destination="87Q-ZP-MJd" id="Pbh-0I-1rm"/>
                     </connections>
                 </viewController>

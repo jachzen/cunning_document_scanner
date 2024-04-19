@@ -12,7 +12,7 @@ A new flutter plugin project.
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Cunning GmbH' => 'marcel@cunning.biz' }
-  s.resources        = 'Assets/**/*'
+  s.resources        = 'Ressources/**/*'
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'

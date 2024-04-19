@@ -11,6 +11,7 @@ import WeScan
 class EditImageViewController : UIViewController{
     @IBOutlet private weak var editImageView: UIView!
     @IBOutlet private weak var rotateButton: UIImageView!
+    @IBOutlet private weak var nextButton: UIBarButtonItem!
     var result: FlutterResult!;
     var captureImage: UIImage!;
     var quad: Quadrilateral?
@@ -28,7 +29,8 @@ class EditImageViewController : UIViewController{
     }
 
     private func setupView() {
-        navigationItem.title = "Edit"
+        navigationItem.title = NSLocalizedString("edit.title", bundle: Bundle(for: CunningDocumentScannerPlugin.self), comment: "Localizable")
+        nextButton.title = NSLocalizedString("edit.button.next", bundle: Bundle(for: CunningDocumentScannerPlugin.self), comment: "Localizable")
         
         self.view.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
         editImageView.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
@@ -50,7 +52,7 @@ class EditImageViewController : UIViewController{
         rotateButton.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(rotateTapped)))
     }
 
-    @IBAction func cropTapped(_ sender: UIButton!) {
+    @IBAction func nextTapped(_ sender: UIButton!) {
         controller.cropImage()
     }
     
