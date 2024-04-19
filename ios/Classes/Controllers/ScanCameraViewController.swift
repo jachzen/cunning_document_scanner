@@ -27,6 +27,8 @@ final class ScanCameraViewController: UIViewController {
     
     var flashEnabled = false;
     
+    var oldAutoScanState = false;
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
@@ -145,6 +147,10 @@ final class ScanCameraViewController: UIViewController {
     }
 
     @IBAction func galleryTapped(_ sender: UIButton) {
+        //Disable autoscan when open image picker
+        oldAutoScanState = controller.isAutoScanEnabled;
+        controller.isAutoScanEnabled = false
+        
         let imagePicker = UIImagePickerController()
         imagePicker.delegate = self
         imagePicker.sourceType = .photoLibrary
@@ -174,13 +180,16 @@ extension ScanCameraViewController: CameraScannerViewOutputDelegate {
 extension ScanCameraViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate{
     public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true)
+        //Restore autoscan state
+        controller.isAutoScanEnabled = oldAutoScanState
     }
     
     public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         picker.dismiss(animated: true)
+        //Restore autoscan state
+        controller.isAutoScanEnabled = oldAutoScanState
         
         guard let image = info[.originalImage] as? UIImage else { return }
-        
         pushEditDocumentViewController(image: image, quad: nil)
     }
 }
