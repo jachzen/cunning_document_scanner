@@ -1,0 +1,17 @@
+/* The "Next" button on the right side of the navigation bar on the Edit screen. */
+"edit.button.next" = "Next";
+
+/* The title on the navigation bar of the Edit screen. */
+"edit.title" = "Edit";
+
+/* The title on the navigation bar of the Review screen. */
+"review.title" = "Review";
+"review.button.done" = "Done";
+
+/* The title on the navigation bar of the Scan screen. */
+"scan.title" = "Scan";
+
+/* The button titles on the Scanning screen. */
+"scanning.cancel" = "Cancel";
+"scanning.auto" = "Auto";
+"scanning.manual" = "Manual";

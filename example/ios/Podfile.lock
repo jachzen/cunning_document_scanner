@@ -1,18 +1,32 @@
 PODS:
+  - CocoaLumberjack (3.8.5):
+    - CocoaLumberjack/Core (= 3.8.5)
+  - CocoaLumberjack/Core (3.8.5)
   - cunning_document_scanner (1.0.0):
     - Flutter
+    - SVGKit
+    - WeScan
   - Flutter (1.0.0)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
   - permission_handler_apple (9.3.0):
     - Flutter
+  - SVGKit (3.0.0):
+    - CocoaLumberjack (~> 3.0)
+  - WeScan (3.0.0)
 
 DEPENDENCIES:
   - cunning_document_scanner (from `.symlinks/plugins/cunning_document_scanner/ios`)
   - Flutter (from `Flutter`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - WeScan (from `.symlinks/plugins/cunning_document_scanner/ios/WeScan-3.0.0`)
+
+SPEC REPOS:
+  trunk:
+    - CocoaLumberjack
+    - SVGKit
 
 EXTERNAL SOURCES:
   cunning_document_scanner:
@@ -23,13 +37,18 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  WeScan:
+    :path: ".symlinks/plugins/cunning_document_scanner/ios/WeScan-3.0.0"
 
 SPEC CHECKSUMS:
-  cunning_document_scanner: 7cb9bd173f7cc7b11696dde98d01492187fc3a67
+  CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
+  cunning_document_scanner: 654ba004dbb3bbe54324d560f5c5780229789b2f
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   path_provider_foundation: 3784922295ac71e43754bd15e0653ccfd36a147c
   permission_handler_apple: 036b856153a2b1f61f21030ff725f3e6fece2b78
+  SVGKit: 1ad7513f8c74d9652f94ed64ddecda1a23864dea
+  WeScan: f50277f7304d146d9ebc4ebdc1b587df84dcdd8b
 
-PODFILE CHECKSUM: e78c989774f3b5b54daf69ce13097109fe4b0da3
+PODFILE CHECKSUM: c1a4e03013e58f8bd901ec6ecbff4df9feb094cc
 
 COCOAPODS: 1.15.2

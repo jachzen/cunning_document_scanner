@@ -12,9 +12,12 @@ A new flutter plugin project.
   s.homepage         = 'http://example.com'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Cunning GmbH' => 'marcel@cunning.biz' }
+  s.resources        = 'Ressources/**/*'
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
+  s.dependency 'WeScan'
+  s.dependency 'SVGKit'
   s.platform = :ios, '13.0'
 
   # Flutter.framework does not contain a i386 slice.
