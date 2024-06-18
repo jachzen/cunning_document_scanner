@@ -5,7 +5,7 @@ import VisionKit
 
 @available(iOS 13.0, *)
 public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate {
-   var resultChannel :FlutterResult?
+   var resultChannel: FlutterResult?
    var presentingController: VNDocumentCameraViewController?
 
   public static func register(with registrar: FlutterPluginRegistrar) {
@@ -18,9 +18,13 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
     if call.method == "getPictures" {
             let presentedVC: UIViewController? = UIApplication.shared.keyWindow?.rootViewController
             self.resultChannel = result
-            self.presentingController = VNDocumentCameraViewController()
-            self.presentingController!.delegate = self
-            presentedVC?.present(self.presentingController!, animated: true)
+            if VNDocumentCameraViewController.isSupported {
+                self.presentingController = VNDocumentCameraViewController()
+                self.presentingController!.delegate = self
+                presentedVC?.present(self.presentingController!, animated: true)
+            } else {
+                result(FlutterError(code: "UNAVAILABLE", message: "Document camera is not available on this device", details: nil))
+            }
         } else {
             result(FlutterMethodNotImplemented)
             return
@@ -41,7 +45,7 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
         df.dateFormat = "yyyyMMdd-HHmmss"
         let formattedDate = df.string(from: currentDateTime)
         var filenames: [String] = []
-        for i in 0 ... scan.pageCount - 1 {
+        for i in 0 ..< scan.pageCount {
             let page = scan.imageOfPage(at: i)
             let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).png")
             try? page.pngData()?.write(to: url)
@@ -57,7 +61,7 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
     }
 
     public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
-        resultChannel?(nil)
+        resultChannel?(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
         presentingController?.dismiss(animated: true)
     }
 }
