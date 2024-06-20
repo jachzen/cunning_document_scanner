@@ -1,3 +1,6 @@
+## 1.2.3
+* Fix iOS crash where Documentscanner is not available
+
 ## 1.2.2
 * Fix bitmap exception crash on Android (thanks to rosenberg_ptr)
 
