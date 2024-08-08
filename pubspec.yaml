@@ -11,8 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  permission_handler: ^11.2.1
-  permission_handler_platform_interface: ^4.1.0
+  permission_handler: ^11.3.1
+  permission_handler_platform_interface: ^4.2.2
   plugin_platform_interface: ^2.1.8
 
 dev_dependencies:

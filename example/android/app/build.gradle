@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "biz.cunning.cunning_document_scanner_example"
-    compileSdk 33
+    compileSdk 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
