@@ -5,8 +5,9 @@ import VisionKit
 
 @available(iOS 13.0, *)
 public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate {
-   var resultChannel: FlutterResult?
-   var presentingController: VNDocumentCameraViewController?
+  var resultChannel: FlutterResult?
+  var presentingController: VNDocumentCameraViewController?
+  var scannerOptions: CunningScannerOptions = CunningScannerOptions()
 
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "cunning_document_scanner", binaryMessenger: registrar.messenger())
@@ -16,6 +17,7 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     if call.method == "getPictures" {
+            scannerOptions = CunningScannerOptions.fromArguments(args: call.arguments)
             let presentedVC: UIViewController? = UIApplication.shared.keyWindow?.rootViewController
             self.resultChannel = result
             if VNDocumentCameraViewController.isSupported {
@@ -47,8 +49,16 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocum
         var filenames: [String] = []
         for i in 0 ..< scan.pageCount {
             let page = scan.imageOfPage(at: i)
-            let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).png")
-            try? page.pngData()?.write(to: url)
+            let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).\(scannerOptions.imageFormat.rawValue)")
+            switch scannerOptions.imageFormat {
+            case CunningScannerImageFormat.jpg:
+                try? page.jpegData(compressionQuality: scannerOptions.jpgCompressionQuality)?.write(to: url)
+                break
+            case CunningScannerImageFormat.png:
+                try? page.pngData()?.write(to: url)
+                break
+            }
+            
             filenames.append(url.path)
         }
         resultChannel?(filenames)
