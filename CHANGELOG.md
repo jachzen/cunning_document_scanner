@@ -1,3 +1,6 @@
+## 1.3.0
+* Allow users to configure the image output type on iOS (PNG or JPEG).
+
 ## 1.2.3
 * Fix iOS crash where Documentscanner is not available
 
