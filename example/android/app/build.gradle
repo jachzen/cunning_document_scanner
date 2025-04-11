@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "biz.cunning.cunning_document_scanner_example"
-    compileSdk 34
+    compileSdk 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -67,7 +67,7 @@ configurations.all {
     resolutionStrategy {
         eachDependency {
             if ((requested.group == "org.jetbrains.kotlin") && (requested.name.startsWith("kotlin-stdlib"))) {
-                useVersion("1.8.0")
+                useVersion("1.8.22")
             }
         }
     }
