@@ -9,6 +9,9 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin {
     public static var backgroundColor: UIColor =  UIColor.white;
     public static var tintColor: UIColor =  UIColor.blue;
     
+    private var pendingResult: FlutterResult?
+    private weak var presentedController: UINavigationController?
+    
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "cunning_document_scanner", binaryMessenger: registrar.messenger())
     let instance = SwiftCunningDocumentScannerPlugin()
@@ -38,13 +41,16 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin {
              result(nil)
              return
          }
-         (controller.viewControllers.first as? ScanCameraViewController)?.setParams(
-            result: result,
-            isGalleryImportAllowed: isGalleryImportAllowed,
-            isAutoScanEnabled: isAutoScanEnabled,
-            isAutoScanAllowed: isAutoScanAllowed,
-            isFlashAllowed: isFlashAllowed
-         )
+         if let scanViewController = controller.viewControllers.first as? ScanCameraViewController {
+             scanViewController.delegate = self
+             scanViewController.isGalleryImportAllowed = isGalleryImportAllowed
+             scanViewController.isAutoScanEnabled = isAutoScanEnabled
+             scanViewController.isAutoScanAllowed = isAutoScanAllowed
+             scanViewController.isFlashAllowed = isFlashAllowed
+             
+             self.pendingResult = result
+             self.presentedController = controller
+         }
          
          viewController.present(controller, animated: true, completion: nil)
      } else{
@@ -54,4 +60,30 @@ public class SwiftCunningDocumentScannerPlugin: NSObject, FlutterPlugin {
         result(FlutterMethodNotImplemented)
     }
   }
+}
+
+// MARK: - DocumentScannerDelegate
+extension SwiftCunningDocumentScannerPlugin: DocumentScannerDelegate {
+    func documentScannerDidScan(_ images: [String]) {
+        pendingResult?(images)
+        pendingResult = nil
+        presentedController?.dismiss(animated: true, completion: nil)
+        presentedController = nil
+    }
+    
+    func documentScannerDidCancel() {
+        pendingResult?(nil)
+        pendingResult = nil
+        presentedController?.dismiss(animated: true, completion: nil)
+        presentedController = nil
+    }
+    
+    func documentScannerDidFail(withError error: Error) {
+        pendingResult?(FlutterError(code: "SCAN_ERROR", 
+                                   message: error.localizedDescription, 
+                                   details: nil))
+        pendingResult = nil
+        presentedController?.dismiss(animated: true, completion: nil)
+        presentedController = nil
+    }
 }

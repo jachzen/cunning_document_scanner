@@ -12,16 +12,12 @@ class EditImageViewController : UIViewController{
     @IBOutlet private weak var editImageView: UIView!
     @IBOutlet private weak var rotateButton: UIImageView!
     @IBOutlet private weak var nextButton: UIBarButtonItem!
-    var result: FlutterResult!;
-    var captureImage: UIImage!;
+    
+    weak var delegate: DocumentScannerDelegate?
+    var image: UIImage!
     var quad: Quadrilateral?
     var controller: WeScan.EditImageViewController!
     
-    public func setParams(result: @escaping FlutterResult,  image: UIImage!, quad: Quadrilateral?) {
-        self.result = result
-        self.captureImage = image
-        self.quad = quad
-    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,7 +30,7 @@ class EditImageViewController : UIViewController{
         
         self.view.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
         editImageView.backgroundColor = SwiftCunningDocumentScannerPlugin.backgroundColor
-        let imageForced = captureImage.forceSameOrientation()
+        let imageForced = image.forceSameOrientation()
         let orientedImage = UIImage(cgImage: imageForced.cgImage!, scale: imageForced.scale, orientation: .down)
         controller = WeScan.EditImageViewController(
             image: orientedImage,
@@ -65,7 +61,8 @@ class EditImageViewController : UIViewController{
     func pushReviewImageViewController(image: UIImage){
         guard let controller = self.storyboard?.instantiateViewController(withIdentifier: "ReviewImageViewController") as? ReviewImageViewController
             else { return }
-        controller.setParams(result: result, image: image)
+        controller.delegate = delegate
+        controller.image = image
         navigationController?.pushViewController(controller, animated: false)
     }
 }

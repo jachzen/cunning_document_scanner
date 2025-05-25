@@ -23,7 +23,8 @@ final class ScanCameraViewController: UIViewController {
     var isAutoScanEnabled: Bool = true
     var isAutoScanAllowed: Bool = true
     var isFlashAllowed: Bool = true
-    var result: FlutterResult!;
+    
+    weak var delegate: DocumentScannerDelegate?
     
     var flashEnabled = false;
     
@@ -34,13 +35,6 @@ final class ScanCameraViewController: UIViewController {
         setupView()
     }
     
-    public func setParams(result: @escaping FlutterResult,  isGalleryImportAllowed: Bool, isAutoScanEnabled: Bool, isAutoScanAllowed: Bool, isFlashAllowed: Bool) {
-        self.result = result
-        self.isGalleryImportAllowed = isGalleryImportAllowed
-        self.isAutoScanEnabled = isAutoScanEnabled
-        self.isAutoScanAllowed = isAutoScanAllowed
-        self.isFlashAllowed = isFlashAllowed
-    }
 
     private func setupView() {
         navigationItem.title = NSLocalizedString("scan.title", bundle: Bundle(for: CunningDocumentScannerPlugin.self), comment: "Localizable")
@@ -142,8 +136,7 @@ final class ScanCameraViewController: UIViewController {
     }
 
     @IBAction func cancelTapped(_ sender: UIButton) {
-        result(nil)
-        self.dismiss(animated: true)
+        delegate?.documentScannerDidCancel()
     }
 
     @IBAction func galleryTapped(_ sender: UIButton) {
@@ -161,7 +154,9 @@ final class ScanCameraViewController: UIViewController {
     func pushEditDocumentViewController(image: UIImage, quad: Quadrilateral?){
         guard let controller = self.storyboard?.instantiateViewController(withIdentifier: "EditImageViewController") as? EditImageViewController
             else { return }
-        controller.setParams(result: result, image: image, quad: quad)
+        controller.delegate = delegate
+        controller.image = image
+        controller.quad = quad
         navigationController?.pushViewController(controller, animated: false)
     }
 }
