@@ -1,3 +1,6 @@
+## 1.3.1
+* Upgraded dependencies.
+
 ## 1.3.0
 * Allow users to configure the image output type on iOS (PNG or JPEG).
 
