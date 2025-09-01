@@ -2,14 +2,14 @@ group 'biz.cunning.cunning_document_scanner'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.8.22'
+    ext.kotlin_version = '2.1.0'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.3.0'
+        classpath 'com.android.tools.build:gradle:8.3.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -26,8 +26,8 @@ apply plugin: 'kotlin-android'
 
 android {
     namespace 'biz.cunning.cunning_document_scanner'
+    compileSdk 36
 
-    compileSdk 33
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
