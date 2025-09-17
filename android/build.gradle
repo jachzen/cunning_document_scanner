@@ -27,7 +27,7 @@ apply plugin: 'kotlin-android'
 android {
     namespace 'biz.cunning.cunning_document_scanner'
 
-    compileSdk 33
+    compileSdk 36
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
