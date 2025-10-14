@@ -1,3 +1,15 @@
+## 1.3.1
+* Upgraded dependencies.
+
+## 1.3.0
+* Allow users to configure the image output type on iOS (PNG or JPEG).
+
+## 1.2.3
+* Fix iOS crash where Documentscanner is not available
+
+## 1.2.2
+* Fix bitmap exception crash on Android (thanks to rosenberg_ptr)
+
 ## 1.2.1
 * Add fallback for Android devices < 1.7GB RAM
 

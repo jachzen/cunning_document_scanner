@@ -74,6 +74,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                 if (requestCode != START_DOCUMENT_ACTIVITY && requestCode != START_DOCUMENT_FB_ACTIVITY) {
                     return@ActivityResultListener false
                 }
+                var handled = false
                 if (requestCode == START_DOCUMENT_ACTIVITY) {
                     when (resultCode) {
                         Activity.RESULT_OK -> {
@@ -81,29 +82,26 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                             val error = data?.extras?.getString("error")
                             if (error != null) {
                                 pendingResult?.error("ERROR", "error - $error", null)
-                                return@ActivityResultListener true
+                            } else {
+                                // get an array with scanned document file paths
+                                val scanningResult: GmsDocumentScanningResult =
+                                    data?.extras?.getParcelable("extra_scanning_result")
+                                        ?: return@ActivityResultListener false
+
+                                val successResponse = scanningResult.pages?.map {
+                                    it.imageUri.toString().removePrefix("file://")
+                                }?.toList()
+                                // trigger the success event handler with an array of cropped images
+                                pendingResult?.success(successResponse)
                             }
-
-                            // get an array with scanned document file paths
-                            val scanningResult: GmsDocumentScanningResult =
-                                data?.extras?.getParcelable<GmsDocumentScanningResult>("extra_scanning_result")
-                                    ?: return@ActivityResultListener false
-
-                            val successResponse = scanningResult.pages?.map {
-                                it.imageUri.toString().removePrefix("file://")
-                            }?.toList()
-
-                            // trigger the success event handler with an array of cropped images
-                            pendingResult?.success(successResponse)
-                            return@ActivityResultListener true
+                            handled = true
                         }
 
                         Activity.RESULT_CANCELED -> {
                             // user closed camera
                             pendingResult?.success(emptyList<String>())
-                            return@ActivityResultListener true
+                            handled = true
                         }
-                        else -> return@ActivityResultListener false
                     }
                 } else {
                     when (resultCode) {
@@ -112,36 +110,39 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                             val error = data?.extras?.getString("error")
                             if (error != null) {
                                 pendingResult?.error("ERROR", "error - $error", null)
-                                return@ActivityResultListener true
+                            } else {
+                                // get an array with scanned document file paths
+                                val croppedImageResults =
+                                    data?.getStringArrayListExtra("croppedImageResults")?.toList()
+                                        ?: let {
+                                            pendingResult?.error("ERROR", "No cropped images returned", null)
+                                            return@ActivityResultListener true
+                                        }
+
+                                // return a list of file paths
+                                // removing file uri prefix as Flutter file will have problems with it
+                                val successResponse = croppedImageResults.map {
+                                    it.removePrefix("file://")
+                                }.toList()
+                                // trigger the success event handler with an array of cropped images
+                                pendingResult?.success(successResponse)
                             }
-
-                            // get an array with scanned document file paths
-                            val croppedImageResults =
-                                data?.getStringArrayListExtra("croppedImageResults")?.toList()
-                                    ?: let {
-                                        pendingResult?.error("ERROR", "No cropped images returned", null)
-                                        return@ActivityResultListener true
-                                    }
-
-                            // return a list of file paths
-                            // removing file uri prefix as Flutter file will have problems with it
-                            val successResponse = croppedImageResults.map {
-                                it.removePrefix("file://")
-                            }.toList()
-
-                            // trigger the success event handler with an array of cropped images
-                            pendingResult?.success(successResponse)
-                            return@ActivityResultListener true
+                            handled = true
                         }
 
                         Activity.RESULT_CANCELED -> {
                             // user closed camera
                             pendingResult?.success(emptyList<String>())
-                            return@ActivityResultListener true
+                            handled = true
                         }
-                        else -> return@ActivityResultListener false
                     }
                 }
+
+                if (handled) {
+                    // Clear the pending result to avoid reuse
+                    pendingResult = null
+                }
+                return@ActivityResultListener handled
             }
         } else {
             binding.removeActivityResultListener(this.delegate!!)
