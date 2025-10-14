@@ -19,11 +19,14 @@ class AndroidScannerOptions {
 
 enum AndroidScannerMode {
   scannerModeFull(
-      1), // adds ML-enabled image cleaning capabilities (erase stains, fingers, etc…) to the SCANNER_MODE_BASE_WITH_FILTER mode.
+    1,
+  ), // adds ML-enabled image cleaning capabilities (erase stains, fingers, etc…) to the SCANNER_MODE_BASE_WITH_FILTER mode.
   scannerModeBaseWithFilter(
-      2), // Adds image filters (grayscale, auto image enhancement, etc…) to the SCANNER_MODE_BASE mode.
+    2,
+  ), // Adds image filters (grayscale, auto image enhancement, etc…) to the SCANNER_MODE_BASE mode.
   scannerModeBase(
-      3); // basic editing capabilities (crop, rotate, reorder pages, etc…).
+    3,
+  ); // basic editing capabilities (crop, rotate, reorder pages, etc…).
 
   const AndroidScannerMode(this.value);
   final int value;
@@ -52,17 +55,17 @@ class CunningDocumentScanner {
   static const _defaultAndroidOptions = AndroidScannerOptions();
   static const _defaultIOSOptions = IOSScannerOptions();
 
-  static const MethodChannel _channel =
-      MethodChannel('cunning_document_scanner');
+  static const MethodChannel _channel = MethodChannel(
+    'cunning_document_scanner',
+  );
 
   /// Call this to start get Picture workflow.
   static Future<List<String>?> getPictures({
     AndroidScannerOptions androidOptions = _defaultAndroidOptions,
     IOSScannerOptions iOSOptions = _defaultIOSOptions,
   }) async {
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.camera,
-    ].request();
+    Map<Permission, PermissionStatus> statuses =
+        await [Permission.camera].request();
     if (statuses.containsValue(PermissionStatus.denied) ||
         statuses.containsValue(PermissionStatus.permanentlyDenied)) {
       throw Exception("Permission not granted");
