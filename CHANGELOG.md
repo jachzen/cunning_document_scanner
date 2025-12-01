@@ -1,5 +1,11 @@
 ## 1.4.0
-* Upgraded dependencies.
+### General
+* Bumped `permission_handler` to `12.0.1`.
+* Updated the example app to use Kotlin `2.2.21`, Android Gradle Plugin `8.13.1`, and Gradle `8.13`.
+* Added detailed documentation comments to the `CunningDocumentScanner` class.
+### Android
+* Upgraded `play-services-mlkit-document-scanner` to `16.0.0`.
+* Updated `compileSdk` to `34`.
 
 ## 1.3.1
 * Upgraded dependencies.
