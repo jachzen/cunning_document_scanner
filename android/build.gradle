@@ -27,7 +27,7 @@ apply plugin: 'kotlin-android'
 android {
     namespace 'biz.cunning.cunning_document_scanner'
 
-    compileSdk 33
+    compileSdk 34
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -49,5 +49,5 @@ android {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.google.android.gms:play-services-mlkit-document-scanner:16.0.0-beta1'
+    implementation 'com.google.android.gms:play-services-mlkit-document-scanner:16.0.0'
 }

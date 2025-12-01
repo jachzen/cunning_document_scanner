@@ -24,7 +24,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace "biz.cunning.cunning_document_scanner_example"
-    compileSdk 35
+    compileSdk 36
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -42,7 +42,7 @@ android {
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "biz.cunning.cunning_document_scanner_example"
-        minSdkVersion 21
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -63,11 +63,11 @@ flutter {
 
 dependencies {}
 
-configurations.all {
+configurations.configureEach {
     resolutionStrategy {
         eachDependency {
             if ((requested.group == "org.jetbrains.kotlin") && (requested.name.startsWith("kotlin-stdlib"))) {
-                useVersion("1.8.22")
+                useVersion("2.2.21")
             }
         }
     }
