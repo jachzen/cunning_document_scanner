@@ -1,6 +1,6 @@
 name: cunning_document_scanner
 description: A document scanner plugin for flutter. Scan and crop automatically on iOS and Android.
-version: 1.4.0
+version: 2.0.0
 homepage: https://cunning.biz
 repository: https://github.com/jachzen/cunning_document_scanner
 
@@ -19,7 +19,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ">=3.0.1 <7.0.0"
-  mockito: ^5.4.5
+  mockito: ^5.6.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

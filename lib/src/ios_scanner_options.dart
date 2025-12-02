@@ -1,11 +1,4 @@
-/// Enumerates the different output image formats are supported.
-enum IosImageFormat {
-  /// Indicates the output image should be formatted as JPEG image.
-  jpg,
-
-  /// Indicates the output image should be formatted as PNG image.
-  png,
-}
+import 'ios_image_format.dart';
 
 /// Different options that modify the behavior of the document scanner on iOS.
 ///
