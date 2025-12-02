@@ -13,8 +13,13 @@ void main() {
     });
 
     test('getPictures with denied permission', () async {
-      expect(() async => await CunningDocumentScanner.getPictures(),
-          throwsA(isA<Exception>()));
+      expect(
+        () async => await CunningDocumentScanner.getPictures(),
+        throwsA(isA<CunningDocumentScannerException>()
+            .having((e) => e.code, 'code', 'permission_denied')
+            .having(
+                (e) => e.message, 'message', 'Camera permission not granted')),
+      );
     });
   });
 
@@ -25,8 +30,13 @@ void main() {
     });
 
     test('getPictures with permanently denied permission', () async {
-      expect(() async => await CunningDocumentScanner.getPictures(),
-          throwsA(isA<Exception>()));
+      expect(
+        () async => await CunningDocumentScanner.getPictures(),
+        throwsA(isA<CunningDocumentScannerException>()
+            .having((e) => e.code, 'code', 'permission_denied')
+            .having(
+                (e) => e.message, 'message', 'Camera permission not granted')),
+      );
     });
   });
 

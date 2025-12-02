@@ -1,7 +1,8 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:io';
+
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
+import 'package:flutter/material.dart';
 
 void main() {
   runApp(const MyApp());
@@ -49,10 +50,11 @@ class _MyAppState extends State<MyApp> {
     List<String> pictures;
     try {
       pictures = await CunningDocumentScanner.getPictures(
+              isGalleryImportAllowed: true,
               iosScannerOptions: IosScannerOptions(
-            imageFormat: IosImageFormat.jpg,
-            jpgCompressionQuality: 0.5,
-          )) ??
+                imageFormat: IosImageFormat.jpg,
+                jpgCompressionQuality: 0.5,
+              )) ??
           [];
       if (!mounted) return;
       setState(() {
