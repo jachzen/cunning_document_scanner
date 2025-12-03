@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';
-import 'package:universal_io/io.dart';
 
 import '../cunning_document_scanner.dart';
 
