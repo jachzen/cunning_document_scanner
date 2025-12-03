@@ -1,8 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/services.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';
+import 'package:universal_io/io.dart';
 
-import 'ios_scanner_options.dart';
+import '../cunning_document_scanner.dart';
 
 /// A class that provides a simple way to scan documents.
 class CunningDocumentScanner {
@@ -24,6 +26,17 @@ class CunningDocumentScanner {
     bool isGalleryImportAllowed = false,
     IosScannerOptions? iosScannerOptions,
   }) async {
+    if (!Platform.isAndroid) {
+      Map<Permission, PermissionStatus> statuses = await [
+        Permission.camera,
+      ].request();
+      if (statuses.containsValue(PermissionStatus.denied) ||
+          statuses.containsValue(PermissionStatus.permanentlyDenied)) {
+        throw const CunningDocumentScannerException.permissionDenied(
+            'Camera permission not granted');
+      }
+    }
+
     final List<dynamic>? pictures = await _channel.invokeMethod('getPictures', {
       'noOfPages': noOfPages,
       'isGalleryImportAllowed': isGalleryImportAllowed,
