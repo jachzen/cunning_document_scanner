@@ -1,10 +1,13 @@
 package biz.cunning.cunning_document_scanner
 
+import android.Manifest
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.IntentSender
+import android.content.pm.PackageManager
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import biz.cunning.cunning_document_scanner.fallback.DocumentScannerActivity
 import biz.cunning.cunning_document_scanner.fallback.constants.DocumentScannerExtra
 import com.google.mlkit.common.MlKitException
@@ -24,13 +27,16 @@ import io.flutter.plugin.common.PluginRegistry
 
 
 /** CunningDocumentScannerPlugin */
-class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
+class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
+    PluginRegistry.RequestPermissionsResultListener {
     private var delegate: PluginRegistry.ActivityResultListener? = null
     private var binding: ActivityPluginBinding? = null
     private var pendingResult: Result? = null
     private lateinit var activity: Activity
     private val START_DOCUMENT_ACTIVITY: Int = 0x362738
     private val START_DOCUMENT_FB_ACTIVITY: Int = 0x362737
+    private val REQUEST_CAMERA_PERMISSION: Int = 0x362739
+    private var noOfPages: Int = 0
 
 
     /// The MethodChannel that will the communication between Flutter and native Android
@@ -46,7 +52,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     override fun onMethodCall(call: MethodCall, result: Result) {
         if (call.method == "getPictures") {
-            val noOfPages = call.argument<Int>("noOfPages") ?: 50;
+            noOfPages = call.argument<Int>("noOfPages") ?: 50;
             val isGalleryImportAllowed = call.argument<Boolean>("isGalleryImportAllowed") ?: false;
             this.pendingResult = result
             startScan(noOfPages, isGalleryImportAllowed)
@@ -62,8 +68,8 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
         this.activity = binding.activity
-
         addActivityResultListener(binding)
+        binding.addRequestPermissionsResultListener(this)
     }
 
     private fun addActivityResultListener(binding: ActivityPluginBinding) {
@@ -187,16 +193,28 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
             }
         }.addOnFailureListener {
             if (it is MlKitException) {
-                val intent = createDocumentScanIntent(noOfPages)
-                try {
-                    ActivityCompat.startActivityForResult(
-                        this.activity,
-                        intent,
-                        START_DOCUMENT_FB_ACTIVITY,
-                        null
+                if (ContextCompat.checkSelfPermission(
+                        activity,
+                        Manifest.permission.CAMERA
+                    ) == PackageManager.PERMISSION_GRANTED
+                ) {
+                    val intent = createDocumentScanIntent(noOfPages)
+                    try {
+                        ActivityCompat.startActivityForResult(
+                            this.activity,
+                            intent,
+                            START_DOCUMENT_FB_ACTIVITY,
+                            null
+                        )
+                    } catch (e: ActivityNotFoundException) {
+                        pendingResult?.error("ERROR", "FAILED TO START ACTIVITY", null)
+                    }
+                } else {
+                    ActivityCompat.requestPermissions(
+                        activity,
+                        arrayOf(Manifest.permission.CAMERA),
+                        REQUEST_CAMERA_PERMISSION
                     )
-                } catch (e: ActivityNotFoundException) {
-                    pendingResult?.error("ERROR", "FAILED TO START ACTIVITY", null)
                 }
             } else {
                 pendingResult?.error("ERROR", "Failed to start document scanner Intent", null)
@@ -210,13 +228,45 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
         addActivityResultListener(binding)
+        binding.addRequestPermissionsResultListener(this)
     }
 
     override fun onDetachedFromActivity() {
         removeActivityResultListener()
+        binding?.removeRequestPermissionsResultListener(this)
     }
 
     private fun removeActivityResultListener() {
         this.delegate?.let { this.binding?.removeActivityResultListener(it) }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ): Boolean {
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                val intent = createDocumentScanIntent(noOfPages)
+                try {
+                    ActivityCompat.startActivityForResult(
+                        this.activity,
+                        intent,
+                        START_DOCUMENT_FB_ACTIVITY,
+                        null
+                    )
+                } catch (e: ActivityNotFoundException) {
+                    pendingResult?.error("ERROR", "FAILED TO START ACTIVITY", null)
+                }
+            } else {
+                pendingResult?.error(
+                    "CAMERA_PERMISSION_DENIED",
+                    "Camera permission is required to scan documents.",
+                    null
+                )
+            }
+            return true
+        }
+        return false
     }
 }
