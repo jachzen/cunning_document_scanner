@@ -10,6 +10,8 @@ import biz.cunning.cunning_document_scanner.fallback.constants.DocumentScannerEx
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_BASE
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_BASE_WITH_FILTER
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_FULL
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanning
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanningResult
@@ -48,8 +50,9 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         if (call.method == "getPictures") {
             val noOfPages = call.argument<Int>("noOfPages") ?: 50;
             val isGalleryImportAllowed = call.argument<Boolean>("isGalleryImportAllowed") ?: false;
+            val scannerMode = resolveScannerMode(call.argument<String>("androidScannerMode"))
             this.pendingResult = result
-            startScan(noOfPages, isGalleryImportAllowed)
+            startScan(noOfPages, isGalleryImportAllowed, scannerMode)
         } else {
             result.notImplemented()
         }
@@ -169,12 +172,21 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     /**
      * add document scanner result handler and launch the document scanner
      */
-    private fun startScan(noOfPages: Int, isGalleryImportAllowed: Boolean) {
+    private fun resolveScannerMode(mode: String?): Int {
+        return when (mode) {
+            "base" -> SCANNER_MODE_BASE
+            "base_with_filter" -> SCANNER_MODE_BASE_WITH_FILTER
+            "full", null -> SCANNER_MODE_FULL
+            else -> SCANNER_MODE_FULL
+        }
+    }
+
+    private fun startScan(noOfPages: Int, isGalleryImportAllowed: Boolean, scannerMode: Int) {
         val options = GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(isGalleryImportAllowed)
             .setPageLimit(noOfPages)
             .setResultFormats(RESULT_FORMAT_JPEG)
-            .setScannerMode(SCANNER_MODE_FULL)
+            .setScannerMode(scannerMode)
             .build()
         val scanner = GmsDocumentScanning.getClient(options)
         scanner.getStartScanIntent(activity).addOnSuccessListener {

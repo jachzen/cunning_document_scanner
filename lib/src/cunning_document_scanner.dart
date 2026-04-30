@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import 'android_scanner_mode.dart';
 import 'exceptions.dart';
 import 'ios_scanner_options.dart';
 
@@ -18,12 +19,14 @@ class CunningDocumentScanner {
   ///
   /// [noOfPages] is the maximum number of pages that can be scanned.
   /// [isGalleryImportAllowed] is a flag that allows the user to import images from the gallery.
+  /// [androidScannerMode] controls the ML Kit scanner mode on Android only.
   /// [iosScannerOptions] is a set of options for the iOS scanner.
   ///
   /// Returns a list of paths to the scanned images, or null if the user cancels the operation.
   static Future<List<String>?> getPictures({
     int noOfPages = 100,
     bool isGalleryImportAllowed = false,
+    AndroidScannerMode? androidScannerMode = AndroidScannerMode.full,
     IosScannerOptions? iosScannerOptions,
   }) async {
     Map<Permission, PermissionStatus> statuses = await [
@@ -38,6 +41,7 @@ class CunningDocumentScanner {
     final List<dynamic>? pictures = await _channel.invokeMethod('getPictures', {
       'noOfPages': noOfPages,
       'isGalleryImportAllowed': isGalleryImportAllowed,
+      'androidScannerMode': androidScannerMode.methodChannelValue,
       if (iosScannerOptions != null)
         'iosScannerOptions': {
           'imageFormat': iosScannerOptions.imageFormat.name,
