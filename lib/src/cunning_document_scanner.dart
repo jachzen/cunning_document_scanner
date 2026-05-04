@@ -41,7 +41,7 @@ class CunningDocumentScanner {
     final List<dynamic>? pictures = await _channel.invokeMethod('getPictures', {
       'noOfPages': noOfPages,
       'isGalleryImportAllowed': isGalleryImportAllowed,
-      'androidScannerMode': androidScannerMode.methodChannelValue,
+      'androidScannerMode': androidScannerMode?.methodChannelValue,
       if (iosScannerOptions != null)
         'iosScannerOptions': {
           'imageFormat': iosScannerOptions.imageFormat.name,
