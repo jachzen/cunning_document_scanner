@@ -1,3 +1,9 @@
+## 2.3.0
+### Android
+* Upgraded Gradle wrapper to version `8.14.5`.
+* Modernized Kotlin configuration to use the new `compilerOptions` DSL instead of legacy `kotlinOptions`.
+* Cleaned up legacy build script configurations, removing deprecated dependencies (`kotlin-stdlib-jdk7`) and applying standard Kotlin DSL configurations.
+
 ## 2.2.0
 ### Android
 * Added support for configuring the ML Kit document scanner mode.
