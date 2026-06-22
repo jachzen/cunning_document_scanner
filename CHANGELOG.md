@@ -1,4 +1,10 @@
+## 2.2.0
+### Android
+* Added support for configuring the ML Kit document scanner mode.
+* Added `AndroidScannerMode` enum (`full`, `base`, `baseWithFilter`) to choose between different scanning pipelines.
+
 ## 2.1.0
+
 ### General
 * Bumped Dart SDK constraint to `>=3.5.0 <4.0.0`.
 * Bumped Flutter SDK constraint to `>=3.24.0`.
