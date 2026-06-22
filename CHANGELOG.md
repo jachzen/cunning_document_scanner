@@ -1,3 +1,18 @@
+## 2.1.0
+### General
+* Bumped Dart SDK constraint to `>=3.5.0 <4.0.0`.
+* Bumped Flutter SDK constraint to `>=3.24.0`.
+* Upgraded `permission_handler` to `^12.0.3`.
+* Upgraded `flutter_lints` constraint to `^6.0.0`.
+* Moved `permission_handler_platform_interface` to `dev_dependencies`.
+* Modernized Flutter code syntax.
+* Added launch configurations for VS Code.
+
+### iOS
+* Migrated the iOS plugin to Swift Package Manager (SPM) for modern Flutter integration.
+* Reorganized the iOS directory structure under `ios/cunning_document_scanner/` and added `Package.swift`.
+* Renamed `SwiftCunningDocumentScannerPlugin` to `CunningDocumentScannerPlugin`.
+
 ## 2.0.0
 ### Breaking Changes
 * Reorganized library structure: all implementation files moved to `lib/src/` directory.
