@@ -1,9 +1,36 @@
-## 2.1.0
+## 2.4.0
 ### Android
 * Migrated to "Built-in Kotlin" support, removing manual Kotlin Gradle Plugin (KGP) application for future Flutter compatibility.
 * Updated Gradle wrapper to `8.14.0`.
 * Updated Android Gradle Plugin (AGP) to `8.11.1`.
 * Updated Kotlin version to `2.2.20`.
+
+## 2.3.0
+### Android
+* Upgraded Gradle wrapper to version `8.14.5`.
+* Modernized Kotlin configuration to use the new `compilerOptions` DSL instead of legacy `kotlinOptions`.
+* Cleaned up legacy build script configurations, removing deprecated dependencies (`kotlin-stdlib-jdk7`) and applying standard Kotlin DSL configurations.
+
+## 2.2.0
+### Android
+* Added support for configuring the ML Kit document scanner mode.
+* Added `AndroidScannerMode` enum (`full`, `base`, `baseWithFilter`) to choose between different scanning pipelines.
+
+## 2.1.0
+
+### General
+* Bumped Dart SDK constraint to `>=3.5.0 <4.0.0`.
+* Bumped Flutter SDK constraint to `>=3.24.0`.
+* Upgraded `permission_handler` to `^12.0.3`.
+* Upgraded `flutter_lints` constraint to `^6.0.0`.
+* Moved `permission_handler_platform_interface` to `dev_dependencies`.
+* Modernized Flutter code syntax.
+* Added launch configurations for VS Code.
+
+### iOS
+* Migrated the iOS plugin to Swift Package Manager (SPM) for modern Flutter integration.
+* Reorganized the iOS directory structure under `ios/cunning_document_scanner/` and added `Package.swift`.
+* Renamed `SwiftCunningDocumentScannerPlugin` to `CunningDocumentScannerPlugin`.
 
 ## 2.0.0
 ### Breaking Changes
