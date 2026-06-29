@@ -78,6 +78,16 @@ You can also scan directly to a single PDF document. If `asPdf` is set to `true`
    // pdfPath will be something like: ['/path/to/document.pdf']
 ```
 
+### Gallery Import (Cross-Platform)
+
+Allow the user to import images from their photo library/gallery on both Android and iOS:
+
+```dart
+   final imagesPath = await CunningDocumentScanner.getPictures(
+      isGalleryImportAllowed: true, // Show selection sheet/picker to import from photo library
+   );
+```
+
 ### Android Specific
 
 There are some features in Android that allow you to adjust the scanner that will be ignored in iOS:
@@ -85,7 +95,6 @@ There are some features in Android that allow you to adjust the scanner that wil
 ```dart
    final imagesPath = await CunningDocumentScanner.getPictures(
       noOfPages: 1, // Limit the number of pages to 1
-      isGalleryImportAllowed: true, // Allow the user to also pick an image from his gallery
       androidScannerMode: AndroidScannerMode.base, // Use ML Kit base mode on Android (Optional)
    );
 ```

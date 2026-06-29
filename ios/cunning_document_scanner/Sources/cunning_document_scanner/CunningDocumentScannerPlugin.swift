@@ -3,9 +3,11 @@ import UIKit
 import Vision
 import VisionKit
 import PDFKit
+import Photos
+import PhotosUI
 
 @available(iOS 13.0, *)
-public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate {
+public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var resultChannel: FlutterResult?
     var presentingController: VNDocumentCameraViewController?
     var scannerOptions = CunningScannerOptions()
@@ -26,12 +28,59 @@ public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCa
         let presentedVC = UIApplication.shared.keyWindow?.rootViewController
         resultChannel = result
 
+        if scannerOptions.isGalleryImportAllowed {
+            let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+            
+            let cameraAction = UIAlertAction(title: "Camera", style: .default) { _ in
+                self.openCamera(from: presentedVC)
+            }
+            let galleryAction = UIAlertAction(title: "Gallery", style: .default) { _ in
+                self.openGallery(from: presentedVC)
+            }
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+                self.resultChannel?(nil)
+            }
+            
+            alertController.addAction(cameraAction)
+            alertController.addAction(galleryAction)
+            alertController.addAction(cancelAction)
+            
+            if let popoverController = alertController.popoverPresentationController {
+                popoverController.sourceView = presentedVC?.view
+                popoverController.sourceRect = CGRect(x: presentedVC?.view.bounds.midX ?? 0, y: presentedVC?.view.bounds.midY ?? 0, width: 0, height: 0)
+                popoverController.permittedArrowDirections = []
+            }
+            
+            presentedVC?.present(alertController, animated: true)
+        } else {
+            self.openCamera(from: presentedVC)
+        }
+    }
+
+    func openCamera(from presentedVC: UIViewController?) {
         if VNDocumentCameraViewController.isSupported {
             presentingController = VNDocumentCameraViewController()
             presentingController?.delegate = self
             presentedVC?.present(presentingController!, animated: true)
         } else {
-            result(FlutterError(code: "UNAVAILABLE", message: "Document camera is not available on this device", details: nil))
+            resultChannel?(FlutterError(code: "UNAVAILABLE", message: "Document camera is not available on this device", details: nil))
+        }
+    }
+
+    func openGallery(from presentedVC: UIViewController?) {
+        if #available(iOS 14.0, *) {
+            var configuration = PHPickerConfiguration()
+            configuration.filter = .images
+            configuration.selectionLimit = 0
+            
+            let picker = PHPickerViewController(configuration: configuration)
+            picker.delegate = self
+            presentedVC?.present(picker, animated: true)
+        } else {
+            let picker = UIImagePickerController()
+            picker.sourceType = .photoLibrary
+            picker.delegate = self
+            presentedVC?.present(picker, animated: true)
         }
     }
 
@@ -40,7 +89,7 @@ public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCa
         return paths[0]
     }
 
-    public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
+    func processSelectedImages(_ images: [UIImage]) {
         let tempDirPath = getDocumentsDirectory()
         let currentDateTime = Date()
         let df = DateFormatter()
@@ -49,8 +98,7 @@ public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCa
 
         if scannerOptions.asPdf {
             let pdfDocument = PDFDocument()
-            for i in 0 ..< scan.pageCount {
-                let pageImage = scan.imageOfPage(at: i)
+            for (i, pageImage) in images.enumerated() {
                 if let pdfPage = PDFPage(image: pageImage) {
                     pdfDocument.insert(pdfPage, at: i)
                 }
@@ -63,8 +111,7 @@ public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCa
             }
         } else {
             var filenames: [String] = []
-            for i in 0 ..< scan.pageCount {
-                let page = scan.imageOfPage(at: i)
+            for (i, page) in images.enumerated() {
                 let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).\(scannerOptions.imageFormat.rawValue)")
 
                 switch scannerOptions.imageFormat {
@@ -78,6 +125,16 @@ public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCa
             }
             resultChannel?(filenames)
         }
+    }
+
+    // MARK: - VNDocumentCameraViewControllerDelegate
+
+    public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFinishWith scan: VNDocumentCameraScan) {
+        var images: [UIImage] = []
+        for i in 0 ..< scan.pageCount {
+            images.append(scan.imageOfPage(at: i))
+        }
+        processSelectedImages(images)
         presentingController?.dismiss(animated: true)
     }
 
@@ -89,5 +146,61 @@ public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCa
     public func documentCameraViewController(_ controller: VNDocumentCameraViewController, didFailWithError error: Error) {
         resultChannel?(FlutterError(code: "ERROR", message: error.localizedDescription, details: nil))
         presentingController?.dismiss(animated: true)
+    }
+
+    // MARK: - UIImagePickerControllerDelegate
+
+    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        picker.dismiss(animated: true)
+        
+        guard let image = info[.originalImage] as? UIImage else {
+            resultChannel?(nil)
+            return
+        }
+        
+        processSelectedImages([image])
+    }
+
+    public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        picker.dismiss(animated: true)
+        resultChannel?(nil)
+    }
+}
+
+// MARK: - PHPickerViewControllerDelegate
+
+@available(iOS 14.0, *)
+extension CunningDocumentScannerPlugin: PHPickerViewControllerDelegate {
+    public func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        
+        if results.isEmpty {
+            resultChannel?(nil)
+            return
+        }
+        
+        let dispatchGroup = DispatchGroup()
+        var images: [UIImage] = Array(repeating: UIImage(), count: results.count)
+        
+        for (index, result) in results.enumerated() {
+            if result.itemProvider.canLoadObject(ofClass: UIImage.self) {
+                dispatchGroup.enter()
+                result.itemProvider.loadObject(ofClass: UIImage.self) { (object, error) in
+                    if let image = object as? UIImage {
+                        images[index] = image
+                    }
+                    dispatchGroup.leave()
+                }
+            }
+        }
+        
+        dispatchGroup.notify(queue: .main) {
+            let validImages = images.filter { $0.size.width > 0 }
+            if validImages.isEmpty {
+                self.resultChannel?(nil)
+            } else {
+                self.processSelectedImages(validImages)
+            }
+        }
     }
 }

@@ -22,6 +22,7 @@ class CunningDocumentScanner {
   /// [isGalleryImportAllowed] is a flag that allows the user to import images from the gallery.
   /// [androidScannerMode] controls the ML Kit scanner mode on Android only.
   /// [iosScannerOptions] is a set of options for the iOS scanner.
+  /// [asPdf] is a flag that indicates if the scanned pages should be compiled and returned as a single PDF file path.
   ///
   /// Returns a list of paths to the scanned images, or null if the user cancels the operation.
   static Future<List<String>?> getPictures({

@@ -20,6 +20,7 @@ class _MyAppState extends State<MyApp> {
   List<String> _pictures = [];
   bool _asPdf = false;
   bool _isPdfResult = false;
+  bool _isGalleryImportAllowed = false;
 
   @override
   void initState() {
@@ -47,6 +48,16 @@ class _MyAppState extends State<MyApp> {
               onChanged: (value) {
                 setState(() {
                   _asPdf = value;
+                });
+              },
+            ),
+            SwitchListTile(
+              title: const Text("Allow Gallery Import"),
+              subtitle: const Text("Import documents from photo library"),
+              value: _isGalleryImportAllowed,
+              onChanged: (value) {
+                setState(() {
+                  _isGalleryImportAllowed = value;
                 });
               },
             ),
@@ -108,7 +119,7 @@ class _MyAppState extends State<MyApp> {
     List<String> pictures;
     try {
       pictures = await CunningDocumentScanner.getPictures(
-              isGalleryImportAllowed: true,
+              isGalleryImportAllowed: _isGalleryImportAllowed,
               asPdf: _asPdf,
               iosScannerOptions: IosScannerOptions(
                 imageFormat: IosImageFormat.jpg,
