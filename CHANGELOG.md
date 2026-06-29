@@ -1,3 +1,11 @@
+## 2.5.0
+### Android
+* Removed redundant camera and storage permissions from `AndroidManifest.xml`.
+* Android no longer prompts the user for camera or storage permissions at runtime since ML Kit and the fallback camera intent handle them without requiring permission in the host app.
+
+### iOS
+* Camera permission request remains active and required for iOS VisionKit.
+
 ## 2.4.0
 ### Android
 * Migrated to "Built-in Kotlin" support, removing manual Kotlin Gradle Plugin (KGP) application for future Flutter compatibility.

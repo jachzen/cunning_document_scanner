@@ -1,4 +1,5 @@
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:permission_handler_platform_interface/permission_handler_platform_interface.dart';
@@ -8,8 +9,13 @@ import 'mocks/mock_permission_handler_platform.dart';
 void main() {
   group('CunningDocumentScanner permission denied', () {
     setUp(() {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       PermissionHandlerPlatform.instance = MockPermissionHandlerPlatform(
           permissionStatus: PermissionStatus.denied);
+    });
+
+    tearDown(() {
+      debugDefaultTargetPlatformOverride = null;
     });
 
     test('getPictures with denied permission', () async {
@@ -25,8 +31,13 @@ void main() {
 
   group('CunningDocumentScanner permission permanently denied', () {
     setUp(() {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       PermissionHandlerPlatform.instance = MockPermissionHandlerPlatform(
           permissionStatus: PermissionStatus.permanentlyDenied);
+    });
+
+    tearDown(() {
+      debugDefaultTargetPlatformOverride = null;
     });
 
     test('getPictures with permanently denied permission', () async {

@@ -23,6 +23,7 @@ val flutterVersionName =
 android {
     namespace = "biz.cunning.cunning_document_scanner_example"
     compileSdk = 36
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17

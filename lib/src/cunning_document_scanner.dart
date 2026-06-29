@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -29,13 +30,15 @@ class CunningDocumentScanner {
     AndroidScannerMode? androidScannerMode = AndroidScannerMode.full,
     IosScannerOptions? iosScannerOptions,
   }) async {
-    Map<Permission, PermissionStatus> statuses = await [
-      Permission.camera,
-    ].request();
-    if (statuses.containsValue(PermissionStatus.denied) ||
-        statuses.containsValue(PermissionStatus.permanentlyDenied)) {
-      throw const CunningDocumentScannerException.permissionDenied(
-          'Camera permission not granted');
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final Map<Permission, PermissionStatus> statuses = await [
+        Permission.camera,
+      ].request();
+      if (statuses.containsValue(PermissionStatus.denied) ||
+          statuses.containsValue(PermissionStatus.permanentlyDenied)) {
+        throw const CunningDocumentScannerException.permissionDenied(
+            'Camera permission not granted');
+      }
     }
 
     final List<dynamic>? pictures = await _channel.invokeMethod('getPictures', {
