@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cunning_document_scanner/cunning_document_scanner.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,6 +18,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   List<String> _pictures = [];
+  bool _asPdf = false;
+  bool _isPdfResult = false;
 
   @override
   void initState() {
@@ -37,9 +40,64 @@ class _MyAppState extends State<MyApp> {
         body: SingleChildScrollView(
             child: Column(
           children: [
+            SwitchListTile(
+              title: const Text("Scan as PDF"),
+              subtitle: const Text("Compile pages into a single PDF document"),
+              value: _asPdf,
+              onChanged: (value) {
+                setState(() {
+                  _asPdf = value;
+                });
+              },
+            ),
+            const SizedBox(height: 10),
             ElevatedButton(
                 onPressed: onPressed, child: const Text("Add Pictures")),
-            for (var picture in _pictures) Image.file(File(picture))
+            const SizedBox(height: 20),
+            if (_isPdfResult)
+              for (var picture in _pictures)
+                Card(
+                  clipBehavior: Clip.antiAlias,
+                  margin: const EdgeInsets.all(16.0),
+                  child: InkWell(
+                    onTap: () {
+                      OpenFile.open(picture);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          const Icon(Icons.picture_as_pdf,
+                              size: 64, color: Colors.red),
+                          const SizedBox(height: 8),
+                          Text(
+                            picture,
+                            style: const TextStyle(fontSize: 12),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.open_in_new,
+                                  size: 16, color: Colors.blue),
+                              SizedBox(width: 4),
+                              Text(
+                                "Tap to open PDF",
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+            else
+              for (var picture in _pictures) Image.file(File(picture))
           ],
         )),
       ),
@@ -51,6 +109,7 @@ class _MyAppState extends State<MyApp> {
     try {
       pictures = await CunningDocumentScanner.getPictures(
               isGalleryImportAllowed: true,
+              asPdf: _asPdf,
               iosScannerOptions: IosScannerOptions(
                 imageFormat: IosImageFormat.jpg,
                 jpgCompressionQuality: 0.5,
@@ -59,6 +118,7 @@ class _MyAppState extends State<MyApp> {
       if (!mounted) return;
       setState(() {
         _pictures = pictures;
+        _isPdfResult = _asPdf;
       });
     } catch (exception) {
       // Handle exception here

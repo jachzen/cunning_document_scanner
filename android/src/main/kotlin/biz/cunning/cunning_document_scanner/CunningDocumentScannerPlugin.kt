@@ -7,9 +7,12 @@ import android.content.IntentSender
 import androidx.core.app.ActivityCompat
 import biz.cunning.cunning_document_scanner.fallback.DocumentScannerActivity
 import biz.cunning.cunning_document_scanner.fallback.constants.DocumentScannerExtra
+import biz.cunning.cunning_document_scanner.fallback.utils.FileUtil
+import java.io.File
 import com.google.mlkit.common.MlKitException
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_JPEG
+import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.RESULT_FORMAT_PDF
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_BASE
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_BASE_WITH_FILTER
 import com.google.mlkit.vision.documentscanner.GmsDocumentScannerOptions.SCANNER_MODE_FULL
@@ -30,6 +33,7 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
     private var delegate: PluginRegistry.ActivityResultListener? = null
     private var binding: ActivityPluginBinding? = null
     private var pendingResult: Result? = null
+    private var asPdf: Boolean = false
     private lateinit var activity: Activity
     private val START_DOCUMENT_ACTIVITY: Int = 0x362738
     private val START_DOCUMENT_FB_ACTIVITY: Int = 0x362737
@@ -51,8 +55,9 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
             val noOfPages = call.argument<Int>("noOfPages") ?: 50;
             val isGalleryImportAllowed = call.argument<Boolean>("isGalleryImportAllowed") ?: false;
             val scannerMode = resolveScannerMode(call.argument<String>("androidScannerMode"))
+            this.asPdf = call.argument<Boolean>("asPdf") ?: false
             this.pendingResult = result
-            startScan(noOfPages, isGalleryImportAllowed, scannerMode)
+            startScan(noOfPages, isGalleryImportAllowed, scannerMode, asPdf)
         } else {
             result.notImplemented()
         }
@@ -90,11 +95,20 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                                     data?.extras?.getParcelable("extra_scanning_result")
                                         ?: return@ActivityResultListener false
 
-                                val successResponse = scanningResult.pages?.map {
-                                    it.imageUri.toString().removePrefix("file://")
-                                }?.toList()
-                                // trigger the success event handler with an array of cropped images
-                                pendingResult?.success(successResponse)
+                                if (asPdf) {
+                                    val pdfUri = scanningResult.pdf?.uri?.toString()?.removePrefix("file://")
+                                    if (pdfUri != null) {
+                                        pendingResult?.success(listOf(pdfUri))
+                                    } else {
+                                        pendingResult?.error("ERROR", "No PDF returned from ML Kit scanner", null)
+                                    }
+                                } else {
+                                    val successResponse = scanningResult.pages?.map {
+                                        it.imageUri.toString().removePrefix("file://")
+                                    }?.toList()
+                                    // trigger the success event handler with an array of cropped images
+                                    pendingResult?.success(successResponse)
+                                }
                             }
                             handled = true
                         }
@@ -126,8 +140,19 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                                 val successResponse = croppedImageResults.map {
                                     it.removePrefix("file://")
                                 }.toList()
-                                // trigger the success event handler with an array of cropped images
-                                pendingResult?.success(successResponse)
+                                if (asPdf) {
+                                    try {
+                                        val pdfFile = FileUtil().createPdfFile(activity)
+                                        FileUtil().convertImagesToPdf(successResponse, pdfFile)
+                                        successResponse.forEach { java.io.File(it).delete() }
+                                        pendingResult?.success(listOf(pdfFile.absolutePath))
+                                    } catch (e: Exception) {
+                                        pendingResult?.error("ERROR", "Failed to create PDF from fallback scanner: ${e.message}", null)
+                                    }
+                                } else {
+                                    // trigger the success event handler with an array of cropped images
+                                    pendingResult?.success(successResponse)
+                                }
                             }
                             handled = true
                         }
@@ -181,13 +206,19 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         }
     }
 
-    private fun startScan(noOfPages: Int, isGalleryImportAllowed: Boolean, scannerMode: Int) {
-        val options = GmsDocumentScannerOptions.Builder()
+    private fun startScan(noOfPages: Int, isGalleryImportAllowed: Boolean, scannerMode: Int, asPdf: Boolean) {
+        val optionsBuilder = GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(isGalleryImportAllowed)
             .setPageLimit(noOfPages)
-            .setResultFormats(RESULT_FORMAT_JPEG)
             .setScannerMode(scannerMode)
-            .build()
+
+        if (asPdf) {
+            optionsBuilder.setResultFormats(RESULT_FORMAT_PDF)
+        } else {
+            optionsBuilder.setResultFormats(RESULT_FORMAT_JPEG)
+        }
+
+        val options = optionsBuilder.build()
         val scanner = GmsDocumentScanning.getClient(options)
         scanner.getStartScanIntent(activity).addOnSuccessListener {
             try {

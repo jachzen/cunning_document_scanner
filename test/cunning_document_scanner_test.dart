@@ -91,5 +91,24 @@ void main() {
       final result = await CunningDocumentScanner.getPictures();
       expect(result, fakeResult);
     });
+
+    testWidgets('getPictures passes asPdf parameter',
+        (WidgetTester tester) async {
+      final List<String> fakeResult = ['fake_pdf_url'];
+      MethodChannel channel = const MethodChannel('cunning_document_scanner');
+
+      var passedAsPdf = false;
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        channel,
+        (MethodCall methodCall) {
+          passedAsPdf = methodCall.arguments['asPdf'] ?? false;
+          return Future.value(fakeResult);
+        },
+      );
+
+      final result = await CunningDocumentScanner.getPictures(asPdf: true);
+      expect(result, fakeResult);
+      expect(passedAsPdf, isTrue);
+    });
   });
 }

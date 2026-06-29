@@ -29,6 +29,7 @@ class CunningDocumentScanner {
     bool isGalleryImportAllowed = false,
     AndroidScannerMode? androidScannerMode = AndroidScannerMode.full,
     IosScannerOptions? iosScannerOptions,
+    bool asPdf = false,
   }) async {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       final Map<Permission, PermissionStatus> statuses = await [
@@ -45,6 +46,7 @@ class CunningDocumentScanner {
       'noOfPages': noOfPages,
       'isGalleryImportAllowed': isGalleryImportAllowed,
       'androidScannerMode': androidScannerMode?.methodChannelValue,
+      'asPdf': asPdf,
       if (iosScannerOptions != null)
         'iosScannerOptions': {
           'imageFormat': iosScannerOptions.imageFormat.name,

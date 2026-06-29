@@ -1,10 +1,15 @@
 ## 2.5.0
+### General
+* Added cross-platform support for native PDF export. Call `CunningDocumentScanner.getPictures(asPdf: true)` to return a list containing a single path pointing to the generated PDF.
+
 ### Android
 * Removed redundant camera and storage permissions from `AndroidManifest.xml`.
 * Android no longer prompts the user for camera or storage permissions at runtime since ML Kit and the fallback camera intent handle them without requiring permission in the host app.
+* Integrated native PDF support in both the Google Play Services ML Kit Document Scanner and the local low-RAM fallback scanner (using built-in `PdfDocument`).
 
 ### iOS
 * Camera permission request remains active and required for iOS VisionKit.
+* Integrated native PDF compilation using `PDFKit` (converting VisionKit scan pages into a single PDF document).
 
 ## 2.4.0
 ### Android
