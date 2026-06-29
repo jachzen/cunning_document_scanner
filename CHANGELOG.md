@@ -1,3 +1,10 @@
+## 2.4.0
+### Android
+* Migrated to "Built-in Kotlin" support, removing manual Kotlin Gradle Plugin (KGP) application for future Flutter compatibility.
+* Updated Gradle wrapper to `8.14.5`.
+* Updated Android Gradle Plugin (AGP) to `8.13.1`.
+* Updated Kotlin version to `2.2.21`.
+
 ## 2.3.0
 ### Android
 * Upgraded Gradle wrapper to version `8.14.5`.
