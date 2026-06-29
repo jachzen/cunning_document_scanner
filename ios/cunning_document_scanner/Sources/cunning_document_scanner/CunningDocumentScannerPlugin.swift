@@ -2,6 +2,7 @@ import Flutter
 import UIKit
 import Vision
 import VisionKit
+import PDFKit
 
 @available(iOS 13.0, *)
 public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate {
@@ -45,23 +46,38 @@ public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCa
         let df = DateFormatter()
         df.dateFormat = "yyyyMMdd-HHmmss"
         let formattedDate = df.string(from: currentDateTime)
-        var filenames: [String] = []
 
-        for i in 0 ..< scan.pageCount {
-            let page = scan.imageOfPage(at: i)
-            let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).\(scannerOptions.imageFormat.rawValue)")
-
-            switch scannerOptions.imageFormat {
-            case .jpg:
-                try? page.jpegData(compressionQuality: scannerOptions.jpgCompressionQuality)?.write(to: url)
-            case .png:
-                try? page.pngData()?.write(to: url)
+        if scannerOptions.asPdf {
+            let pdfDocument = PDFDocument()
+            for i in 0 ..< scan.pageCount {
+                let pageImage = scan.imageOfPage(at: i)
+                if let pdfPage = PDFPage(image: pageImage) {
+                    pdfDocument.insert(pdfPage, at: i)
+                }
             }
+            let url = tempDirPath.appendingPathComponent(formattedDate + ".pdf")
+            if pdfDocument.write(to: url) {
+                resultChannel?([url.path])
+            } else {
+                resultChannel?(FlutterError(code: "ERROR", message: "Failed to generate PDF document", details: nil))
+            }
+        } else {
+            var filenames: [String] = []
+            for i in 0 ..< scan.pageCount {
+                let page = scan.imageOfPage(at: i)
+                let url = tempDirPath.appendingPathComponent(formattedDate + "-\(i).\(scannerOptions.imageFormat.rawValue)")
 
-            filenames.append(url.path)
+                switch scannerOptions.imageFormat {
+                case .jpg:
+                    try? page.jpegData(compressionQuality: scannerOptions.jpgCompressionQuality)?.write(to: url)
+                case .png:
+                    try? page.pngData()?.write(to: url)
+                }
+
+                filenames.append(url.path)
+            }
+            resultChannel?(filenames)
         }
-
-        resultChannel?(filenames)
         presentingController?.dismiss(animated: true)
     }
 

@@ -66,6 +66,18 @@ The easiest way to get a list of images is:
 ```dart
    final imagesPath = await CunningDocumentScanner.getPictures();
 ```
+
+### PDF Export (Cross-Platform)
+
+You can also scan directly to a single PDF document. If `asPdf` is set to `true`, the method returns a list containing a single file path pointing to the generated PDF:
+
+```dart
+   final pdfPath = await CunningDocumentScanner.getPictures(
+      asPdf: true,
+   );
+   // pdfPath will be something like: ['/path/to/document.pdf']
+```
+
 ### Android Specific
 
 There are some features in Android that allow you to adjust the scanner that will be ignored in iOS:
