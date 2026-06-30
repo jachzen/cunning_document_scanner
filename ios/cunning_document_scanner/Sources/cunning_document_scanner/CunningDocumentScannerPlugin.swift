@@ -6,11 +6,18 @@ import PDFKit
 import Photos
 import PhotosUI
 
-@available(iOS 13.0, *)
 public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCameraViewControllerDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var resultChannel: FlutterResult?
     var presentingController: VNDocumentCameraViewController?
     var scannerOptions = CunningScannerOptions()
+
+    var rootViewController: UIViewController? {
+        let keyWindow = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow } ?? (UIApplication.shared.delegate?.window ?? nil)
+        return keyWindow?.rootViewController
+    }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "cunning_document_scanner", binaryMessenger: registrar.messenger())
@@ -25,27 +32,37 @@ public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCa
         }
 
         scannerOptions = CunningScannerOptions.fromArguments(args: call.arguments)
-        let presentedVC = UIApplication.shared.keyWindow?.rootViewController
+        let presentedVC = rootViewController
         resultChannel = result
 
         if scannerOptions.isGalleryImportAllowed {
+            let labelCamera = getLocalizedOption("cunning_document_scanner_camera", defaultValue: "Camera")
+            let labelGallery = getLocalizedOption("cunning_document_scanner_gallery", defaultValue: "Gallery")
+            let labelCancel = getLocalizedOption("cunning_document_scanner_cancel", defaultValue: "Cancel")
             let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+            alertController.view.tintColor = .systemBlue
             
-            let cameraAction = UIAlertAction(title: "Camera", style: .default) { _ in
+            let cameraAction = UIAlertAction(title: labelCamera, style: .default) { _ in
                 self.openCamera(from: presentedVC)
             }
-            let galleryAction = UIAlertAction(title: "Gallery", style: .default) { _ in
+            cameraAction.setValue(UIColor.systemBlue, forKey: "titleTextColor")
+
+            let galleryAction = UIAlertAction(title: labelGallery, style: .default) { _ in
                 self.openGallery(from: presentedVC)
             }
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            galleryAction.setValue(UIColor.systemBlue, forKey: "titleTextColor")
+
+            let cancelAction = UIAlertAction(title: labelCancel, style: .cancel) { _ in
                 self.resultChannel?(nil)
             }
+            cancelAction.setValue(UIColor.systemRed, forKey: "titleTextColor")
             
             alertController.addAction(cameraAction)
             alertController.addAction(galleryAction)
             alertController.addAction(cancelAction)
             
-            if let popoverController = alertController.popoverPresentationController {
+            if UIDevice.current.userInterfaceIdiom == .pad,
+               let popoverController = alertController.popoverPresentationController {
                 popoverController.sourceView = presentedVC?.view
                 popoverController.sourceRect = CGRect(x: presentedVC?.view.bounds.midX ?? 0, y: presentedVC?.view.bounds.midY ?? 0, width: 0, height: 0)
                 popoverController.permittedArrowDirections = []
@@ -87,6 +104,30 @@ public class CunningDocumentScannerPlugin: NSObject, FlutterPlugin, VNDocumentCa
     func getDocumentsDirectory() -> URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         return paths[0]
+    }
+
+    func getLocalizedOption(_ key: String, defaultValue: String) -> String {
+        let mainBundleValue = Bundle.main.localizedString(forKey: key, value: nil, table: nil)
+        if mainBundleValue != key {
+            return mainBundleValue
+        }
+        #if SWIFT_PACKAGE
+        let pluginBundle = Bundle.module
+        #else
+        let pluginBundle = Bundle(for: CunningDocumentScannerPlugin.self)
+        #endif
+
+        var resolvedBundle = pluginBundle
+        for language in Locale.preferredLanguages {
+            let baseLanguage = language.components(separatedBy: "-").first ?? language
+            if let path = pluginBundle.path(forResource: baseLanguage, ofType: "lproj"),
+               let langBundle = Bundle(path: path) {
+                resolvedBundle = langBundle
+                break
+            }
+        }
+
+        return resolvedBundle.localizedString(forKey: key, value: defaultValue, table: nil)
     }
 
     func processSelectedImages(_ images: [UIImage]) {

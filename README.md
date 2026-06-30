@@ -59,6 +59,21 @@ Add the [NSCameraUsageDescription](https://developer.apple.com/documentation/bun
 > [!NOTE]
 > Since this plugin has migrated to Swift Package Manager (SPM), and the `permission_handler` dependency (version 12.0.2+) also supports SPM, permissions are now resolved automatically. The dependency scans your app's `Info.plist` and compiles only the code for the permission keys you have declared (e.g., `NSCameraUsageDescription`). You do not need to manually configure preprocessor macros in your `Podfile`.
 
+#### Localization Configuration
+To ensure native iOS UI components (like the document camera, photo library picker, and our source selection menu) are displayed in the user's preferred language (e.g., Spanish), you can enable mixed localizations in your app's `ios/Runner/Info.plist`:
+
+```xml
+<key>CFBundleAllowMixedLocalizations</key>
+<true/>
+```
+
+Alternatively, you can add the supported languages to the **Localizations** list in Xcode:
+1. Open `ios/Runner.xcworkspace` in Xcode.
+2. Select the `Runner` project in the left project navigator.
+3. In the **Info** tab, under the **Localizations** section, click the `+` button and add the languages your app supports.
+
+If one of these configurations is applied, iOS will automatically load the plugin's built-in translations (supporting 29 major languages) and translate the system document camera UI to the device's system language. Otherwise, iOS will default all system and plugin UI strings to English.
+
 ## How to use ?
 
 The easiest way to get a list of images is:
