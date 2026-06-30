@@ -1,4 +1,4 @@
-## 2.5.0
+## 2.4.0
 ### General
 * Added cross-platform support for native PDF export. Call `CunningDocumentScanner.getPictures(asPdf: true)` to return a list containing a single path pointing to the generated PDF.
 
@@ -6,19 +6,16 @@
 * Removed redundant camera and storage permissions from `AndroidManifest.xml`.
 * Android no longer prompts the user for camera or storage permissions at runtime since ML Kit and the fallback camera intent handle them without requiring permission in the host app.
 * Integrated native PDF support in both the Google Play Services ML Kit Document Scanner and the local low-RAM fallback scanner (using built-in `PdfDocument`).
+* Migrated to "Built-in Kotlin" support, removing manual Kotlin Gradle Plugin (KGP) application for future Flutter compatibility.
+* Updated Gradle wrapper to `8.14.5`.
+* Updated Android Gradle Plugin (AGP) to `8.13.1`.
+* Updated Kotlin version to `2.2.21`.
 
 ### iOS
 * Camera permission request remains active and required for iOS VisionKit.
 * Integrated native PDF compilation using `PDFKit` (converting VisionKit scan pages into a single PDF document).
 * Added native support for `isGalleryImportAllowed` on iOS. Users can now choose to scan using the camera (VisionKit) or import existing documents from their photo library (`PHPickerViewController` on iOS 14+ supporting multi-selection, and `UIImagePickerController` on iOS 13). Imported images undergo the same native PDF/image conversion pipeline.
 * Added native localization support supporting 29 major languages for the iOS source selection Action Sheet and VisionKit interface. Included explicit color themes using KVC to guarantee text visibility across custom dark/light themes.
-
-## 2.4.0
-### Android
-* Migrated to "Built-in Kotlin" support, removing manual Kotlin Gradle Plugin (KGP) application for future Flutter compatibility.
-* Updated Gradle wrapper to `8.14.5`.
-* Updated Android Gradle Plugin (AGP) to `8.13.1`.
-* Updated Kotlin version to `2.2.21`.
 
 ## 2.3.0
 ### Android
