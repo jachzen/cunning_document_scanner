@@ -10,6 +10,7 @@
 ### iOS
 * Camera permission request remains active and required for iOS VisionKit.
 * Integrated native PDF compilation using `PDFKit` (converting VisionKit scan pages into a single PDF document).
+* Added native support for `isGalleryImportAllowed` on iOS. Users can now choose to scan using the camera (VisionKit) or import existing documents from their photo library (`PHPickerViewController` on iOS 14+ supporting multi-selection, and `UIImagePickerController` on iOS 13). Imported images undergo the same native PDF/image conversion pipeline.
 
 ## 2.4.0
 ### Android

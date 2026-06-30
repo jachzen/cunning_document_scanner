@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "cunning_document_scanner",
+    defaultLocalization: "en",
     platforms: [
         .iOS("13.0")
     ],
@@ -17,6 +18,9 @@ let package = Package(
             name: "cunning_document_scanner",
             dependencies: [
                 .product(name: "FlutterFramework", package: "FlutterFramework")
+            ],
+            resources: [
+                .process("Resources")
             ]
         )
     ]
