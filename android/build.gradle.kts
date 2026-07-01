@@ -11,6 +11,15 @@ val agpMajor = com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION.substringBefore
 if (agpMajor < 9) {
     apply(plugin = "org.jetbrains.kotlin.android")
 }
+
+rootProject.allprojects {
+    repositories {
+        maven {
+            url = uri("https://developer.huawei.com/repo/")
+        }
+    }
+}
+
 android {
     namespace = "biz.cunning.cunning_document_scanner"
     compileSdk = 34
@@ -40,4 +49,6 @@ plugins.withId("org.jetbrains.kotlin.android") {
 
 dependencies {
     implementation("com.google.android.gms:play-services-mlkit-document-scanner:16.0.0")
+    implementation("com.huawei.hms:ml-computer-vision-documentskew:3.11.0.301")
+    implementation("com.huawei.hms:ml-computer-vision-documentskew-model:3.7.0.301")
 }

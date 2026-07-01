@@ -24,6 +24,10 @@ import biz.cunning.cunning_document_scanner.fallback.utils.CameraUtil
 import biz.cunning.cunning_document_scanner.fallback.utils.FileUtil
 import biz.cunning.cunning_document_scanner.fallback.utils.ImageUtil
 import java.io.File
+import com.huawei.hms.mlsdk.common.MLFrame
+import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerFactory
+import com.huawei.hms.mlsdk.dsc.MLDocumentSkewCorrectionAnalyzerSetting
+import android.content.pm.PackageManager
 /**
  * This class contains the main document scanner code. It opens the camera, lets the user
  * take a photo of a document (homework paper, business card, etc.), detects document corners,
@@ -92,45 +96,34 @@ class DocumentScannerActivity : AppCompatActivity() {
                 return@CameraUtil
             }
 
-            // get document corners by detecting them, or falling back to photo corners with
-            // slight margin if we can't find the corners
-            val corners = try {
-                val (topLeft, topRight, bottomLeft, bottomRight) = getDocumentCorners(photo)
-                Quad(topLeft, topRight, bottomRight, bottomLeft)
-            } catch (exception: Exception) {
-                finishIntentWithError(
-                    "unable to get document corners: ${exception.message}"
-                )
-                return@CameraUtil
-            }
+            // get document corners asynchronously using HMS if available, or fallback to default corners
+            detectCorners(photo) { corners ->
+                document = Document(originalPhotoPath, photo.width, photo.height, corners)
 
-            document = Document(originalPhotoPath, photo.width, photo.height, corners)
+                // user is allowed to move corners to make corrections
+                try {
+                    // set preview image height based off of photo dimensions
+                    imageView.setImagePreviewBounds(photo, screenWidth, screenHeight)
 
+                    // display original photo, so user can adjust detected corners
+                    imageView.setImage(photo)
 
-            // user is allowed to move corners to make corrections
-            try {
-                // set preview image height based off of photo dimensions
-                imageView.setImagePreviewBounds(photo, screenWidth, screenHeight)
+                    // document corner points are in original image coordinates, so we need to
+                    // scale and move the points to account for blank space (caused by photo and
+                    // photo container having different aspect ratios)
+                    val cornersInImagePreviewCoordinates = corners
+                        .mapOriginalToPreviewImageCoordinates(
+                            imageView.imagePreviewBounds,
+                            imageView.imagePreviewBounds.height() / photo.height
+                        )
 
-                // display original photo, so user can adjust detected corners
-                imageView.setImage(photo)
-
-                // document corner points are in original image coordinates, so we need to
-                // scale and move the points to account for blank space (caused by photo and
-                // photo container having different aspect ratios)
-                val cornersInImagePreviewCoordinates = corners
-                    .mapOriginalToPreviewImageCoordinates(
-                        imageView.imagePreviewBounds,
-                        imageView.imagePreviewBounds.height() / photo.height
+                    // display cropper, and allow user to move corners
+                    imageView.setCropper(cornersInImagePreviewCoordinates)
+                } catch (exception: Exception) {
+                    finishIntentWithError(
+                        "unable get image preview ready: ${exception.message}"
                     )
-
-                // display cropper, and allow user to move corners
-                imageView.setCropper(cornersInImagePreviewCoordinates)
-            } catch (exception: Exception) {
-                finishIntentWithError(
-                    "unable get image preview ready: ${exception.message}"
-                )
-                return@CameraUtil
+                }
             }
         },
         onCancelPhoto = {
@@ -214,19 +207,74 @@ class DocumentScannerActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Pass in a photo of a document, and get back 4 corner points (top left, top right, bottom
-     * right, bottom left). This tries to detect document corners, but falls back to photo corners
-     * with slight margin in case we can't detect document corners.
-     *
-     * @param photo the original photo with a rectangular document
-     * @return a List of 4 OpenCV points (document corners)
-     */
-    private fun getDocumentCorners(photo: Bitmap): List<Point> {
-        val cornerPoints: List<Point>? = null
+    private fun isHmsAvailable(): Boolean {
+        return try {
+            packageManager.getPackageInfo("com.huawei.hwid", 0)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
 
-        // if cornerPoints is null then default the corners to the photo bounds with a margin
-        return cornerPoints ?: listOf(
+    private fun detectCorners(photo: Bitmap, onComplete: (Quad) -> Unit) {
+        if (isHmsAvailable()) {
+            try {
+                val setting = MLDocumentSkewCorrectionAnalyzerSetting.Factory().create()
+                val analyzer = MLDocumentSkewCorrectionAnalyzerFactory.getInstance()
+                    .getDocumentSkewCorrectionAnalyzer(setting)
+                val frame = MLFrame.fromBitmap(photo)
+
+                analyzer.asyncDocumentSkewDetect(frame)
+                    .addOnSuccessListener { result: com.huawei.hms.mlsdk.dsc.MLDocumentSkewDetectResult? ->
+                        if (result != null) {
+                            val lt = result.leftTopPosition
+                            val rt = result.rightTopPosition
+                            val lb = result.leftBottomPosition
+                            val rb = result.rightBottomPosition
+
+                            if (lt != null && rt != null && lb != null && rb != null) {
+                                val tl = Point(lt.x.toDouble(), lt.y.toDouble())
+                                val tr = Point(rt.x.toDouble(), rt.y.toDouble())
+                                val bl = Point(lb.x.toDouble(), lb.y.toDouble())
+                                val br = Point(rb.x.toDouble(), rb.y.toDouble())
+                                val sortedQuad = sortPoints(listOf(tl, tr, bl, br))
+                                analyzer.stop()
+                                onComplete(sortedQuad)
+                                return@addOnSuccessListener
+                            }
+                        }
+                        analyzer.stop()
+                        onComplete(getDefaultCorners(photo))
+                    }
+                    .addOnFailureListener {
+                        try {
+                            analyzer.stop()
+                        } catch (e: Exception) {}
+                        onComplete(getDefaultCorners(photo))
+                    }
+                return
+            } catch (e: Exception) {
+                // Fallback to default corners if HMS ML Kit fails to initialize/analyze
+            }
+        }
+        onComplete(getDefaultCorners(photo))
+    }
+
+    private fun sortPoints(points: List<Point>): Quad {
+        val sortedByY = points.sortedBy { it.y }
+        val topPoints = sortedByY.take(2).sortedBy { it.x }
+        val bottomPoints = sortedByY.takeLast(2).sortedBy { it.x }
+
+        val topLeft = topPoints[0]
+        val topRight = topPoints[1]
+        val bottomLeft = bottomPoints[0]
+        val bottomRight = bottomPoints[1]
+
+        return Quad(topLeft, topRight, bottomRight, bottomLeft)
+    }
+
+    private fun getDefaultCorners(photo: Bitmap): Quad {
+        return Quad(
             Point(0.0, 0.0).move(
                 cropperOffsetWhenCornersNotFound,
                 cropperOffsetWhenCornersNotFound
@@ -235,12 +283,12 @@ class DocumentScannerActivity : AppCompatActivity() {
                 -cropperOffsetWhenCornersNotFound,
                 cropperOffsetWhenCornersNotFound
             ),
-            Point(0.0, photo.height.toDouble()).move(
-                cropperOffsetWhenCornersNotFound,
-                -cropperOffsetWhenCornersNotFound
-            ),
             Point(photo.width.toDouble(), photo.height.toDouble()).move(
                 -cropperOffsetWhenCornersNotFound,
+                -cropperOffsetWhenCornersNotFound
+            ),
+            Point(0.0, photo.height.toDouble()).move(
+                cropperOffsetWhenCornersNotFound,
                 -cropperOffsetWhenCornersNotFound
             )
         )

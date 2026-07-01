@@ -206,7 +206,31 @@ class CunningDocumentScannerPlugin : FlutterPlugin, MethodCallHandler, ActivityA
         }
     }
 
+    private fun isHmsAvailable(context: android.content.Context): Boolean {
+        return try {
+            context.packageManager.getPackageInfo("com.huawei.hwid", 0)
+            true
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
     private fun startScan(noOfPages: Int, isGalleryImportAllowed: Boolean, scannerMode: Int, asPdf: Boolean) {
+        if (isHmsAvailable(activity)) {
+            val intent = createDocumentScanIntent(noOfPages)
+            try {
+                ActivityCompat.startActivityForResult(
+                    this.activity,
+                    intent,
+                    START_DOCUMENT_FB_ACTIVITY,
+                    null
+                )
+            } catch (e: ActivityNotFoundException) {
+                pendingResult?.error("ERROR", "FAILED TO START ACTIVITY", null)
+            }
+            return
+        }
+
         val optionsBuilder = GmsDocumentScannerOptions.Builder()
             .setGalleryImportAllowed(isGalleryImportAllowed)
             .setPageLimit(noOfPages)
