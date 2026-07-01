@@ -1,3 +1,8 @@
+## 2.5.0
+### Android
+* Added automatic document edge detection for Huawei Mobile Services (HMS) devices using HMS ML Kit Document Skew Correction.
+* Fixed a crash/restart loop issue on older GMS+HMS dual-service devices (such as Honor 8X and Huawei P30 Lite) by bypassing GMS and launching the fallback scanner directly on HMS-enabled devices.
+
 ## 2.4.0
 ### General
 * Added cross-platform support for native PDF export. Call `CunningDocumentScanner.getPictures(asPdf: true)` to return a list containing a single path pointing to the generated PDF.
